@@ -3,7 +3,7 @@ import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { addProject, updateProject, deleteProject, getProject } from '../supabase/projects'
-import { uploadFile, deleteFile } from '../supabase/storage'
+import { uploadFile, deleteFile, uploadResume } from '../supabase/storage'
 import { useProjects } from '../hooks/useProjects'
 import './AdminDashboard.css'
 
@@ -40,6 +40,25 @@ export default function AdminDashboard() {
   const handleLogout = () => {
     sessionStorage.removeItem('sam_admin')
     navigate('/')
+  }
+
+  const handleResumeUpload = async (e) => {
+    const file = e.target.files[0]
+    if (!file) return
+
+    setSaving(true)
+    setStatus('Uploading resume...')
+
+    try {
+      await uploadResume(file)
+      setStatus('✓ Resume uploaded successfully!')
+    } catch (err) {
+      console.error(err)
+      setStatus(`✗ Upload failed: ${err.message}`)
+    } finally {
+      setSaving(false)
+      if (e.target) e.target.value = ''
+    }
   }
 
   const openUpload = () => {
@@ -244,6 +263,12 @@ export default function AdminDashboard() {
             onClick={openUpload}
           >
             + New Project
+          </button>
+          <button
+            className={`admin-nav-btn ${view === 'resume' ? 'active' : ''}`}
+            onClick={() => { setView('resume'); setStatus(''); setUploadProgress(''); }}
+          >
+            📄 Resume
           </button>
         </nav>
         <button className="admin-nav-btn admin-logout" onClick={handleLogout}>
@@ -456,6 +481,44 @@ export default function AdminDashboard() {
                 {saving && !uploadProgress ? 'Saving...' : view === 'edit' ? 'Save Changes' : 'Publish Project'}
               </button>
             </form>
+          </div>
+        )}
+
+        {/* Resume Settings */}
+        {view === 'resume' && (
+          <div className="admin-panel">
+            <div className="admin-panel__header">
+              <h1 className="display admin-panel__title">Manage Resume</h1>
+            </div>
+            
+            <div className="admin-form">
+              <p className="about-bio" style={{ marginBottom: '1.5rem', color: 'var(--c-grey-4)', fontSize: '1rem' }}>
+                Upload your resume document. The new file will instantly replace the old one for visitors downloading it from the home page.
+              </p>
+              
+              <div 
+                className="admin-dropzone" 
+                onClick={() => !saving && document.getElementById('resume-upload').click()}
+                style={{ opacity: saving ? 0.5 : 1, pointerEvents: saving ? 'none' : 'auto' }}
+              >
+                <span className="mono">+ Choose Resume File (PDF)</span>
+                <span className="mono admin-dropzone__hint">Max 5MB</span>
+              </div>
+              
+              <input 
+                id="resume-upload"
+                type="file" 
+                accept="application/pdf"
+                style={{ display: 'none' }}
+                onChange={handleResumeUpload}
+              />
+              
+              {status && (
+                <p className={`mono admin-status ${status.startsWith('✓') ? 'ok' : 'err'}`} style={{ marginTop: '1rem' }}>
+                  {status}
+                </p>
+              )}
+            </div>
           </div>
         )}
       </main>

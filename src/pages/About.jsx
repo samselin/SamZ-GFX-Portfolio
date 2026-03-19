@@ -4,6 +4,7 @@ import { motion } from 'framer-motion'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import PageTransition from '../components/PageTransition'
+import { getResumeUrl } from '../supabase/storage'
 import { fadeUp, stagger } from '../animations/variants'
 import './About.css'
 
@@ -169,6 +170,19 @@ export default function About() {
                 <span className="mono about-edu__label">Education</span>
                 <h3 className="about-edu__degree">B.E. Computer Science & Engineering</h3>
                 <p className="about-edu__school">JP College Of Engineering, Tamil Nadu</p>
+              </motion.div>
+
+              {/* Resume Button */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.8, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                style={{ marginTop: '2rem' }}
+              >
+                <a href={getResumeUrl()} target="_blank" rel="noopener noreferrer" className="btn btn-primary">
+                  📄 &nbsp;Download Resume
+                </a>
               </motion.div>
             </div>
           </div>

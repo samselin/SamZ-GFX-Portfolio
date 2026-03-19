@@ -67,3 +67,43 @@ export async function deleteFile(publicUrl) {
     // We don't throw here to prevent breaking the overall project delete flow
   }
 }
+
+/**
+ * Uploads (or overwrites) the resume file to a fixed path
+ */
+export async function uploadResume(file) {
+  assertClient()
+  
+  // We use a fixed path so the URL remains consistent.
+  // We also set upsert: true to overwrite any existing resume.
+  const filePath = `resume/resume.pdf`
+
+  const { data, error } = await supabase.storage
+    .from(BUCKET)
+    .upload(filePath, file, {
+      cacheControl: '0',
+      upsert: true
+    })
+
+  if (error) throw error
+
+  const { data: publicUrlData } = supabase.storage
+    .from(BUCKET)
+    .getPublicUrl(data.path)
+
+  return publicUrlData.publicUrl
+}
+
+/**
+ * Returns the public URL for the portfolio resume.
+ * Appends a timestamp to bypass browser caching of the previously uploaded resume.
+ */
+export function getResumeUrl() {
+  if (!supabase) return ''
+  const { data } = supabase.storage
+    .from(BUCKET)
+    .getPublicUrl('resume/resume.pdf')
+  
+  // return URL with cache busting query param
+  return `${data.publicUrl}?t=${Date.now()}`
+}

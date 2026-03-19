@@ -9,6 +9,7 @@ import WireframeSphere from '../components/WireframeSphere'
 import PageTransition from '../components/PageTransition'
 import ProjectCard from '../components/ProjectCard'
 import { useProjects } from '../hooks/useProjects'
+import { getResumeUrl } from '../supabase/storage'
 import { fadeUp, stagger } from '../animations/variants'
 import './Home.css'
 
@@ -210,6 +211,9 @@ export default function Home() {
               </Link>
               <a href="#showreel" className="btn btn-ghost">
                 ▷ &nbsp;Watch Showreel
+              </a>
+              <a href={getResumeUrl()} target="_blank" rel="noopener noreferrer" className="btn btn-ghost">
+                📄 &nbsp;Resume
               </a>
             </motion.div>
           </div>

@@ -2,7 +2,7 @@
 
 A production-grade, Apple-inspired portfolio website for 3D generalist **Sam Selin**.
 
-Built with **React + Vite**, **Framer Motion**, **GSAP ScrollTrigger**, and **Firebase**.
+Built with **React + Vite**, **Framer Motion**, **GSAP ScrollTrigger**, and **Supabase**.
 
 ---
 
@@ -26,7 +26,7 @@ Built with **React + Vite**, **Framer Motion**, **GSAP ScrollTrigger**, and **Fi
 | **Cursor Glow** | Smooth lerp-following radial gradient |
 | **Admin Panel** | Hidden — triple-click logo → login modal → dashboard |
 | **Admin Dashboard** | Upload/Edit/Delete projects, image upload with progress |
-| **Firebase** | Firestore (project data) + Storage (images/videos) |
+| **Supabase** | PostgreSQL (project data) + Storage (images/videos) |
 | **Mock Data** | Works offline — falls back to 6 sample projects |
 | **Performance** | Lazy loading, code splitting, React Suspense |
 
