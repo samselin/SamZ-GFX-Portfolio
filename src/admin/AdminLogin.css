@@ -1,0 +1,111 @@
+/* src/admin/AdminLogin.css */
+
+.admin-login-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: var(--z-modal);
+  padding: var(--space-lg);
+}
+
+.admin-login-modal {
+  width: 100%;
+  max-width: 380px;
+  padding: var(--space-2xl) var(--space-xl);
+  border-radius: var(--radius-lg);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--space-sm);
+}
+
+.admin-login-modal__close {
+  position: absolute;
+  top: var(--space-lg);
+  right: var(--space-lg);
+  color: var(--c-grey-4);
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: color var(--duration-fast) ease;
+  background: none;
+  border: none;
+}
+
+.admin-login-modal__close:hover {
+  color: var(--c-white);
+}
+
+.admin-login-modal__icon {
+  font-size: 2rem;
+  color: var(--c-grey-4);
+  margin-bottom: var(--space-sm);
+}
+
+.admin-login-modal__title {
+  font-size: 3rem;
+  color: var(--c-white);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.admin-login-modal__sub {
+  font-size: 0.65rem;
+  letter-spacing: 0.16em;
+  margin-bottom: var(--space-xl);
+}
+
+.admin-login-form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.admin-login-input {
+  width: 100%;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: var(--radius-md);
+  padding: 14px var(--space-lg);
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  letter-spacing: 0.1em;
+  color: var(--c-white);
+  outline: none;
+  transition: border-color var(--duration-fast) ease;
+  text-align: center;
+}
+
+.admin-login-input::placeholder {
+  color: var(--c-grey-4);
+}
+
+.admin-login-input:focus {
+  border-color: rgba(255,255,255,0.3);
+}
+
+.admin-login-error {
+  font-size: 0.65rem;
+  letter-spacing: 0.12em;
+  color: #ff6b6b;
+}
+
+.admin-login-btn {
+  width: 100%;
+  justify-content: center;
+  opacity: 1;
+  transition: all var(--duration-mid) ease;
+}
+
+.admin-login-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none !important;
+}

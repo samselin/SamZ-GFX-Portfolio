@@ -1,0 +1,260 @@
+/* src/pages/Portfolio.css */
+
+.portfolio-page {
+  min-height: 100vh;
+  padding-top: var(--nav-height);
+  display: flex;
+  flex-direction: column;
+}
+
+/* ─── HEADER ─────────────────────────────────────────────────────── */
+.portfolio-header {
+  padding-top: var(--space-2xl);
+  padding-bottom: var(--space-xl);
+}
+
+.portfolio-title {
+  font-size: clamp(5rem, 12vw, 14rem);
+  line-height: 0.88;
+  color: #ffffff;
+  margin-top: var(--space-md);
+  letter-spacing: 0.02em;
+}
+
+.portfolio-subtitle {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #888888;
+  margin-top: var(--space-md);
+}
+
+/* ─── HORIZONTAL SCROLL TRACK ────────────────────────────────────── */
+.h-scroll-track {
+  display: flex;
+  gap: 20px;
+  padding: 8px 64px 40px;
+  overflow-x: scroll;
+  overflow-y: visible;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  cursor: grab;
+  flex: 1;
+  /* Hide scrollbar visually but keep it functional */
+  scrollbar-width: thin;
+  scrollbar-color: #2e2e2e transparent;
+}
+
+.h-scroll-track:active {
+  cursor: grabbing;
+}
+
+.h-scroll-track::-webkit-scrollbar {
+  height: 3px;
+}
+.h-scroll-track::-webkit-scrollbar-track {
+  background: transparent;
+}
+.h-scroll-track::-webkit-scrollbar-thumb {
+  background: #2e2e2e;
+  border-radius: 99px;
+}
+
+/* ─── HINT BAR ───────────────────────────────────────────────────── */
+.h-scroll-hint {
+  padding-bottom: var(--space-xl);
+}
+
+.h-scroll-hint .mono {
+  font-size: 0.62rem;
+  letter-spacing: 0.14em;
+  color: #555555;
+}
+
+/* ─── HORIZONTAL CARD ────────────────────────────────────────────── */
+.h-card {
+  flex-shrink: 0;
+  width: 400px;
+  scroll-snap-align: start;
+}
+
+.h-card--loading {
+  width: 400px;
+  height: 540px;
+  background: #111111;
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,0.04);
+  animation: shimmer 1.5s ease-in-out infinite;
+  flex-shrink: 0;
+  scroll-snap-align: start;
+}
+
+@keyframes shimmer {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.8; }
+}
+
+.h-card__link {
+  display: block;
+  background: #111111;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px;
+  overflow: hidden;
+  text-decoration: none;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.4s ease,
+              border-color 0.3s ease;
+  transform-style: preserve-3d;
+  position: relative;
+  height: 100%;
+}
+
+.h-card__link:hover {
+  box-shadow: 0 24px 80px rgba(0,0,0,0.8),
+              0 0 40px rgba(232, 224, 208, 0.06);
+  border-color: rgba(255,255,255,0.15);
+}
+
+.h-card__num {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  z-index: 5;
+  font-size: 0.62rem;
+  color: rgba(255,255,255,0.5);
+  background: rgba(0,0,0,0.4);
+  padding: 3px 8px;
+  border-radius: 99px;
+  backdrop-filter: blur(4px);
+}
+
+/* ─── THUMBNAIL ──────────────────────────────────────────────────── */
+.h-card__thumb {
+  position: relative;
+  aspect-ratio: 4/3;
+  overflow: hidden;
+}
+
+.h-card__thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: brightness(0.9) saturate(0.85);
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+              filter 0.4s ease;
+  pointer-events: none;
+}
+
+.h-card__link:hover .h-card__thumb img {
+  transform: scale(1.07);
+  filter: brightness(0.65) saturate(0.75);
+}
+
+.h-card__glow {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    circle at var(--gx, 50%) var(--gy, 50%),
+    rgba(232, 224, 208, 0.14) 0%,
+    transparent 60%
+  );
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.h-card__link:hover .h-card__glow {
+  opacity: 1;
+}
+
+.h-card__img-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  padding: 14px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: 3;
+  background: linear-gradient(to top, rgba(0,0,0,0.5) 0%, transparent 50%);
+}
+
+.h-card__link:hover .h-card__img-overlay {
+  opacity: 1;
+}
+
+.h-card__view-cta {
+  font-size: 0.62rem;
+  color: #e8e0d0;
+  letter-spacing: 0.12em;
+  background: rgba(0,0,0,0.5);
+  padding: 5px 10px;
+  border-radius: 99px;
+  backdrop-filter: blur(4px);
+}
+
+/* ─── CARD INFO ──────────────────────────────────────────────────── */
+.h-card__info {
+  padding: 20px 24px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: #111111;
+}
+
+.h-card__category {
+  font-size: 0.62rem;
+  letter-spacing: 0.14em;
+  color: #888888;
+  text-transform: uppercase;
+}
+
+.h-card__title {
+  font-size: 2rem;
+  color: #ffffff;
+  letter-spacing: 0.03em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.h-card__software {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 4px;
+}
+
+.h-card__tag {
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 99px;
+  color: #aaaaaa;
+  background: rgba(255,255,255,0.03);
+}
+
+/* ─── RESPONSIVE ─────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .h-scroll-track {
+    padding: 8px 24px 32px;
+    gap: 14px;
+  }
+
+  .h-card {
+    width: 300px;
+  }
+
+  .h-card__title {
+    font-size: 1.6rem;
+  }
+
+  .portfolio-subtitle {
+    display: none;
+  }
+}
