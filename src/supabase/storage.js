@@ -13,6 +13,31 @@ function assertClient() {
 export async function uploadFile(file) {
   assertClient()
   
+  const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+  const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
+  
+  // If Cloudinary is configured via .env.local, use it to upload (bypasses Supabase 50MB limit)
+  if (cloudName && uploadPreset) {
+    const formData = new FormData()
+    formData.append('file', file)
+    formData.append('upload_preset', uploadPreset)
+    
+    // 'auto' detects if it's an image, video, or raw file
+    const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`, {
+      method: 'POST',
+      body: formData,
+    })
+    
+    if (!res.ok) {
+      const errorData = await res.json()
+      throw new Error(`Cloudinary Upload Error: ${errorData.error?.message || 'Unknown error'}`)
+    }
+    
+    const data = await res.json()
+    return data.secure_url // Return the Cloudinary URL
+  }
+
+  // Fallback to Supabase Storage if Cloudinary is not configured
   // Create a unique filename: timestamp + random string + original name
   // This prevents caching issues and overwriting identically named files
   const ext = file.name.split('.').pop()
@@ -42,6 +67,13 @@ export async function uploadFile(file) {
 export async function deleteFile(publicUrl) {
   assertClient()
   if (!publicUrl) return
+
+  // If it's a Cloudinary URL, skip Supabase deletion. Note: Unsigned Cloudinary uploads 
+  // cannot be deleted directly from the browser for security reasons.
+  if (publicUrl.includes('res.cloudinary.com')) {
+    console.log('Skipping automatic deletion for Cloudinary file:', publicUrl)
+    return
+  }
 
   try {
     // Extract the exact file path from the full public URL

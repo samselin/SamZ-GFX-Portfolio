@@ -126,9 +126,9 @@ export default function AdminDashboard() {
       for (let i = 0; i < files.length; i++) {
         const file = files[i]
         setUploadProgress(`Uploading ${i + 1} of ${files.length}...`)
-        
+
         const publicUrl = await uploadFile(file)
-        
+
         if (file.type.startsWith('video/')) {
           newVideo = publicUrl
         } else {
@@ -152,7 +152,7 @@ export default function AdminDashboard() {
   // Remove a file from the current form array and actually delete it from storage
   const handleRemoveImage = async (indexToRemove) => {
     const urlToRemove = form.images[indexToRemove]
-    
+
     // Remove from UI immediately
     setForm(f => ({
       ...f,
@@ -162,7 +162,7 @@ export default function AdminDashboard() {
     // Delete from Supabase Storage
     try {
       await deleteFile(urlToRemove)
-    } catch(err) {
+    } catch (err) {
       console.error("Failed to delete from storage", err)
     }
   }
@@ -172,7 +172,7 @@ export default function AdminDashboard() {
     setForm(f => ({ ...f, video: '' }))
     try {
       await deleteFile(v)
-    } catch(err) {
+    } catch (err) {
       console.error("Failed to delete video from storage", err)
     }
   }
@@ -222,7 +222,7 @@ export default function AdminDashboard() {
     try {
       // First fetch the project to get all media URLs
       const targetProject = await getProject(id)
-      
+
       // Delete the database row
       await deleteProject(id)
       setConfirmDelete(null)
@@ -316,7 +316,7 @@ export default function AdminDashboard() {
                         Edit
                       </button>
                       <button
-                         className="admin-action-btn admin-action-btn--danger"
+                        className="admin-action-btn admin-action-btn--danger"
                         onClick={() => setConfirmDelete(project.id)}
                       >
                         Delete
@@ -369,7 +369,7 @@ export default function AdminDashboard() {
                   <span className="mono admin-field__label" style={{ marginBottom: 0 }}>Project Breakdown Steps</span>
                   <button type="button" className="btn btn-ghost" style={{ padding: '4px 12px', fontSize: '0.7rem' }} onClick={handleAddBreakdown}>+ Add Step</button>
                 </div>
-                
+
                 <div className="admin-breakdowns-list">
                   {form.breakdowns.map((item, i) => (
                     <div key={i} className="admin-breakdown-row">
@@ -389,8 +389,8 @@ export default function AdminDashboard() {
                           onChange={(e) => handleBreakdownChange(i, 'desc', e.target.value)}
                         />
                       </div>
-                      <button 
-                        type="button" 
+                      <button
+                        type="button"
                         className="admin-breakdown-row__remove admin-action-btn admin-action-btn--danger"
                         onClick={() => handleRemoveBreakdown(i)}
                         title="Remove Step"
@@ -408,9 +408,9 @@ export default function AdminDashboard() {
               {/* Media Upload Area */}
               <div className="admin-field" style={{ marginTop: '1rem' }}>
                 <span className="mono admin-field__label">Media Upload (Images / Video)</span>
-                
-                <div 
-                  className="admin-dropzone" 
+
+                <div
+                  className="admin-dropzone"
                   onClick={() => !saving && fileInputRef.current?.click()}
                   style={{ opacity: saving ? 0.5 : 1, pointerEvents: saving ? 'none' : 'auto' }}
                 >
@@ -423,9 +423,9 @@ export default function AdminDashboard() {
                   )}
                 </div>
 
-                <input 
-                  type="file" 
-                  multiple 
+                <input
+                  type="file"
+                  multiple
                   accept="image/*,video/*"
                   ref={fileInputRef}
                   style={{ display: 'none' }}
@@ -440,23 +440,27 @@ export default function AdminDashboard() {
                       <div key={i} className="admin-image-preview__item">
                         <img src={url} alt={`preview ${i + 1}`} onError={(e) => e.target.style.opacity = 0.2} />
                         {i === 0 && <span className="mono admin-image-preview__badge">Cover</span>}
-                        <button 
-                          type="button" 
-                          className="admin-image-preview__remove" 
+                        <button
+                          type="button"
+                          className="admin-image-preview__remove"
                           title="Delete image"
                           onClick={(e) => { e.stopPropagation(); handleRemoveImage(i); }}
                         >✕</button>
                       </div>
                     ))}
-                    
+
                     {/* Video */}
                     {form.video && (
                       <div className="admin-image-preview__item" style={{ border: '1px solid #ff6b6b' }}>
-                        <video src={form.video} />
+                        {form.video.includes('youtube') || form.video.includes('vimeo') || form.video.includes('drive.google') ? (
+                          <iframe src={form.video} title="preview" style={{ width: '100%', height: '100%', pointerEvents: 'none' }} frameBorder="0" />
+                        ) : (
+                          <video src={form.video} />
+                        )}
                         <span className="mono admin-image-preview__badge" style={{ background: '#ff6b6b' }}>Video</span>
-                        <button 
-                          type="button" 
-                          className="admin-image-preview__remove" 
+                        <button
+                          type="button"
+                          className="admin-image-preview__remove"
                           title="Delete video"
                           onClick={(e) => { e.stopPropagation(); handleRemoveVideo(); }}
                         >✕</button>
@@ -490,29 +494,29 @@ export default function AdminDashboard() {
             <div className="admin-panel__header">
               <h1 className="display admin-panel__title">Manage Resume</h1>
             </div>
-            
+
             <div className="admin-form">
               <p className="about-bio" style={{ marginBottom: '1.5rem', color: 'var(--c-grey-4)', fontSize: '1rem' }}>
                 Upload your resume document. The new file will instantly replace the old one for visitors downloading it from the home page.
               </p>
-              
-              <div 
-                className="admin-dropzone" 
+
+              <div
+                className="admin-dropzone"
                 onClick={() => !saving && document.getElementById('resume-upload').click()}
                 style={{ opacity: saving ? 0.5 : 1, pointerEvents: saving ? 'none' : 'auto' }}
               >
                 <span className="mono">+ Choose Resume File (PDF)</span>
                 <span className="mono admin-dropzone__hint">Max 5MB</span>
               </div>
-              
-              <input 
+
+              <input
                 id="resume-upload"
-                type="file" 
+                type="file"
                 accept="application/pdf"
                 style={{ display: 'none' }}
                 onChange={handleResumeUpload}
               />
-              
+
               {status && (
                 <p className={`mono admin-status ${status.startsWith('✓') ? 'ok' : 'err'}`} style={{ marginTop: '1rem' }}>
                   {status}
