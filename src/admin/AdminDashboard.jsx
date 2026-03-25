@@ -29,6 +29,7 @@ export default function AdminDashboard() {
   const { projects, loading } = useProjects()
   const [view, setView] = useState('list')
   const [editingProject, setEditingProject] = useState(null)
+  const [galleryProject, setGalleryProject] = useState(null)
   const [form, setForm] = useState(EMPTY_FORM)
   const [saving, setSaving] = useState(false)
   const [uploadProgress, setUploadProgress] = useState('')
@@ -82,6 +83,18 @@ export default function AdminDashboard() {
       breakdowns: project.breakdowns || [...DEFAULT_BREAKDOWNS],
     })
     setView('edit')
+    setStatus('')
+    setUploadProgress('')
+  }
+
+  const openGalleryManager = (project) => {
+    setGalleryProject(project)
+    setForm({
+      ...EMPTY_FORM, // reset other fields just in case
+      images: project.images || [],
+      video: project.video || '',
+    })
+    setView('gallery')
     setStatus('')
     setUploadProgress('')
   }
@@ -199,8 +212,6 @@ export default function AdminDashboard() {
       }
 
       if (view === 'edit' && editingProject) {
-        // Find if any old images were removed during edit, if so we should probably clean them up 
-        // (Handled partially by handleRemoveImage above if they interacted via UI)
         await updateProject(editingProject.id, data)
         setStatus('✓ Project updated!')
       } else {
@@ -209,7 +220,29 @@ export default function AdminDashboard() {
       }
       setTimeout(() => {
         setView('list')
-        window.location.reload() // Quickest way to refetch the project list cleanly
+        window.location.reload()
+      }, 1200)
+    } catch (err) {
+      setStatus(`✗ Error: ${err.message}`)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleGallerySubmit = async (e) => {
+    e.preventDefault()
+    setSaving(true)
+    setStatus('Saving gallery...')
+    try {
+      await updateProject(galleryProject.id, {
+        images: form.images,
+        thumbnail: form.images.length > 0 ? form.images[0] : (galleryProject.thumbnail || ''),
+        video: form.video,
+      })
+      setStatus('✓ Gallery updated!')
+      setTimeout(() => {
+        setView('list')
+        window.location.reload()
       }, 1200)
     } catch (err) {
       setStatus(`✗ Error: ${err.message}`)
@@ -312,6 +345,9 @@ export default function AdminDashboard() {
                       </span>
                     </div>
                     <div className="admin-project-row__actions">
+                      <button className="admin-action-btn" onClick={() => openGalleryManager(project)}>
+                        Gallery
+                      </button>
                       <button className="admin-action-btn" onClick={() => openEdit(project)}>
                         Edit
                       </button>
@@ -483,6 +519,101 @@ export default function AdminDashboard() {
                 style={{ alignSelf: 'flex-start', marginTop: '1rem' }}
               >
                 {saving && !uploadProgress ? 'Saving...' : view === 'edit' ? 'Save Changes' : 'Publish Project'}
+              </button>
+            </form>
+          </div>
+        )}
+
+        {/* Gallery Manager Form */}
+        {view === 'gallery' && galleryProject && (
+          <div className="admin-panel">
+            <div className="admin-panel__header">
+              <h1 className="display admin-panel__title">
+                Manage Gallery: {galleryProject.title}
+              </h1>
+              <button className="btn btn-ghost" onClick={() => setView('list')}>
+                ← Back
+              </button>
+            </div>
+
+            <form onSubmit={handleGallerySubmit} className="admin-form">
+              <div className="admin-field">
+                <span className="mono admin-field__label">Project Media (Images / Video)</span>
+                
+                <div
+                  className="admin-dropzone"
+                  onClick={() => !saving && fileInputRef.current?.click()}
+                  style={{ opacity: saving ? 0.5 : 1, pointerEvents: saving ? 'none' : 'auto' }}
+                >
+                  <span className="mono">+ Choose Files</span>
+                  <span className="mono admin-dropzone__hint">
+                    Select multiple images and/or one video. They will be uploaded immediately.
+                  </span>
+                  {uploadProgress && (
+                    <span className="mono" style={{ color: '#4caf50', marginTop: 8 }}>{uploadProgress}</span>
+                  )}
+                </div>
+
+                <input
+                  type="file"
+                  multiple
+                  accept="image/*,video/*"
+                  ref={fileInputRef}
+                  style={{ display: 'none' }}
+                  onChange={handleFileSelect}
+                />
+
+                {/* Media Preview */}
+                {(form.images.length > 0 || form.video) && (
+                  <div className="admin-image-preview">
+                    {/* Images */}
+                    {form.images.map((url, i) => (
+                      <div key={i} className="admin-image-preview__item">
+                        <img src={url} alt={`preview ${i + 1}`} onError={(e) => e.target.style.opacity = 0.2} />
+                        {i === 0 && <span className="mono admin-image-preview__badge">Cover</span>}
+                        <button
+                          type="button"
+                          className="admin-image-preview__remove"
+                          title="Delete image"
+                          onClick={(e) => { e.stopPropagation(); handleRemoveImage(i); }}
+                        >✕</button>
+                      </div>
+                    ))}
+
+                    {/* Video */}
+                    {form.video && (
+                      <div className="admin-image-preview__item" style={{ border: '1px solid #ff6b6b' }}>
+                        {form.video.includes('youtube') || form.video.includes('vimeo') || form.video.includes('drive.google') ? (
+                          <iframe src={form.video} title="preview" style={{ width: '100%', height: '100%', pointerEvents: 'none' }} frameBorder="0" />
+                        ) : (
+                          <video src={form.video} />
+                        )}
+                        <span className="mono admin-image-preview__badge" style={{ background: '#ff6b6b' }}>Video</span>
+                        <button
+                          type="button"
+                          className="admin-image-preview__remove"
+                          title="Delete video"
+                          onClick={(e) => { e.stopPropagation(); handleRemoveVideo(); }}
+                        >✕</button>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {status && (
+                <p className={`mono admin-status ${status.startsWith('✓') ? 'ok' : 'err'}`}>
+                  {status}
+                </p>
+              )}
+
+              <button
+                type="submit"
+                className="btn btn-primary"
+                disabled={saving || uploadProgress !== ''}
+                style={{ alignSelf: 'flex-start', marginTop: '1rem' }}
+              >
+                {saving && !uploadProgress ? 'Saving...' : 'Save Gallery'}
               </button>
             </form>
           </div>

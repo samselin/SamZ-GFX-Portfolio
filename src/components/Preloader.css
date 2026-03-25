@@ -1,0 +1,54 @@
+/* src/components/Preloader.css */
+.preloader {
+  position: fixed;
+  inset: 0;
+  z-index: 999999;
+  background: var(--c-black);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.preloader__logo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-md);
+  z-index: 2;
+}
+
+.preloader__letters {
+  font-size: clamp(3rem, 8vw, 6rem);
+  color: var(--c-white);
+  letter-spacing: 0.1em;
+  margin-left: 0.1em; /* optical balance */
+}
+
+.preloader__sub {
+  font-size: 0.65rem;
+  letter-spacing: 0.25em; /* animates from 0.6em */
+  color: var(--c-grey-5);
+  text-transform: uppercase;
+  margin-left: 0.25em;
+}
+
+.preloader__bar {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.15);
+  transform-origin: left;
+  z-index: 1;
+}
+
+.preloader__curtain {
+  position: absolute;
+  inset: 0;
+  background: var(--c-black);
+  transform-origin: top;
+  z-index: 3;
+}

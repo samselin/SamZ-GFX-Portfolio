@@ -1,0 +1,56 @@
+/* src/components/FloatingShapes.css */
+
+/* ─── SHARED FLOAT + SPIN ────────────────────────────────────────── */
+.fs-shape {
+  will-change: transform, opacity;
+}
+
+/* Cube: orbit + tumble */
+.fs-shape--cube {
+  animation: fs-cube-drift ease-in-out infinite;
+}
+.fs-shape--cube > div {
+  animation: fs-cube-spin linear infinite;
+}
+@keyframes fs-cube-drift {
+  0%   { transform: translateY(0px)   translateX(0px); }
+  25%  { transform: translateY(-18px) translateX(8px);  }
+  50%  { transform: translateY(-10px) translateX(16px); }
+  75%  { transform: translateY(10px)  translateX(4px);  }
+  100% { transform: translateY(0px)   translateX(0px); }
+}
+@keyframes fs-cube-spin {
+  from { transform: rotateX(0deg)   rotateY(0deg)   rotateZ(0deg); }
+  to   { transform: rotateX(360deg) rotateY(240deg) rotateZ(120deg); }
+}
+
+/* Ring: float + slow spin */
+.fs-shape--ring {
+  animation: fs-ring-float ease-in-out infinite;
+}
+@keyframes fs-ring-float {
+  0%   { transform: translateY(0px)   rotateX(10deg) rotateZ(0deg); }
+  50%  { transform: translateY(-22px) rotateX(40deg) rotateZ(180deg); }
+  100% { transform: translateY(0px)   rotateX(10deg) rotateZ(360deg); }
+}
+
+/* Triangle: gentle sway + pulse */
+.fs-shape--tri {
+  animation: fs-tri-sway ease-in-out infinite;
+}
+@keyframes fs-tri-sway {
+  0%   { transform: translateY(0)    rotate(0deg)   scale(1);    opacity: 0.5; }
+  33%  { transform: translateY(-14px) rotate(6deg)  scale(1.06); opacity: 0.8; }
+  66%  { transform: translateY(-8px)  rotate(-5deg) scale(0.96); opacity: 0.6; }
+  100% { transform: translateY(0)    rotate(0deg)   scale(1);    opacity: 0.5; }
+}
+
+/* Dot: twinkle + micro-float */
+.fs-shape--dot {
+  animation: fs-dot-pulse ease-in-out infinite;
+}
+@keyframes fs-dot-pulse {
+  0%   { transform: translateY(0);    opacity: 0.3; }
+  50%  { transform: translateY(-10px); opacity: 1;   }
+  100% { transform: translateY(0);    opacity: 0.3; }
+}

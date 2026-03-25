@@ -3,6 +3,7 @@ import { useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import KineticMarquee from '../components/KineticMarquee'
 import PageTransition from '../components/PageTransition'
 import { getResumeUrl } from '../supabase/storage'
 import { fadeUp, stagger } from '../animations/variants'
@@ -272,6 +273,9 @@ export default function About() {
             </div>
           </div>
         </section>
+
+        {/* ─── BANNER ────────────────────────────────────────────────── */}
+        <KineticMarquee text="VFX • MODELING • LOOKDEV • ANIMATION • " speed={18} />
 
       </div>
     </PageTransition>

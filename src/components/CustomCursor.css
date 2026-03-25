@@ -1,0 +1,40 @@
+/* src/components/CustomCursor.css */
+
+/* Hide system cursor when custom cursor is active */
+.custom-cursor-active,
+.custom-cursor-active * {
+  cursor: none !important;
+}
+
+/* ─── DIFFERENCE BLOB ────────────────────────────────────────────── */
+.cursor-blob {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 16px;
+  height: 16px;
+  background: #ffffff;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 99999;
+  
+  /* Creates the sleek inversion effect */
+  mix-blend-mode: difference;
+  
+  will-change: width, height, transform;
+  transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1), 
+              height 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+              opacity 0.3s ease;
+}
+
+/* Hover state — blob expands significantly to envelope the hovered item */
+.cursor-blob--hover {
+  width: 72px;
+  height: 72px;
+  background: rgba(255, 255, 255, 1);
+}
+
+/* On mobile, don't render */
+@media (max-width: 768px) {
+  .cursor-blob { display: none; }
+}

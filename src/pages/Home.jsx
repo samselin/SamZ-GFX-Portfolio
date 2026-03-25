@@ -6,6 +6,11 @@ import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { useInView } from 'react-intersection-observer'
 import WireframeSphere from '../components/WireframeSphere'
+import FloatingShapes from '../components/FloatingShapes'
+import '../components/FloatingShapes.css'
+import Magnetic from '../components/Magnetic'
+import TextScramble from '../components/TextScramble'
+import KineticMarquee from '../components/KineticMarquee'
 import PageTransition from '../components/PageTransition'
 import ProjectCard from '../components/ProjectCard'
 import { useProjects } from '../hooks/useProjects'
@@ -140,6 +145,35 @@ export default function Home() {
     return () => ctx.revert()
   }, [])
 
+  // 3D tilt on skill cards
+  useEffect(() => {
+    const cards = document.querySelectorAll('.skill-item')
+    const handleEnter = (e) => {
+      const card = e.currentTarget
+      const onMove = (ev) => {
+        const rect = card.getBoundingClientRect()
+        const cx = rect.left + rect.width / 2
+        const cy = rect.top + rect.height / 2
+        const dx = (ev.clientX - cx) / (rect.width / 2)
+        const dy = (ev.clientY - cy) / (rect.height / 2)
+        card.style.transform = `perspective(600px) rotateY(${dx * 12}deg) rotateX(${-dy * 12}deg) scale3d(1.04,1.04,1.04)`
+        card.style.boxShadow = `${-dx * 10}px ${dy * 10}px 32px rgba(0,0,0,0.5)`
+        card.style.transition = 'none'
+      }
+      const onLeave = () => {
+        card.style.transform = ''
+        card.style.boxShadow = ''
+        card.style.transition = ''
+        card.removeEventListener('mousemove', onMove)
+        card.removeEventListener('mouseleave', onLeave)
+      }
+      card.addEventListener('mousemove', onMove)
+      card.addEventListener('mouseleave', onLeave)
+    }
+    cards.forEach(c => c.addEventListener('mouseenter', handleEnter))
+    return () => cards.forEach(c => c.removeEventListener('mouseenter', handleEnter))
+  }, [])
+
   return (
     <PageTransition>
       <div className="home">
@@ -150,6 +184,7 @@ export default function Home() {
             <div className="hero__orb hero__orb--1" />
             <div className="hero__orb hero__orb--2" />
             <div className="hero__orb hero__orb--3" />
+            <FloatingShapes />
           </div>
 
           {/* Eyebrow */}
@@ -173,9 +208,11 @@ export default function Home() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 1.1, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
               >
-                Samz
+                <TextScramble text="Samz" delay={150} duration={1000} />
                 <br />
-                <span className="hero__name--outline">G F X</span>
+                <span className="hero__name--outline">
+                  <TextScramble text="G F X" delay={400} duration={800} />
+                </span>
               </motion.h1>
             </div>
 
@@ -206,15 +243,21 @@ export default function Home() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
             >
-              <Link to="/portfolio" className="btn btn-primary">
-                View Portfolio
-              </Link>
-              <a href="#showreel" className="btn btn-ghost">
-                ▷ &nbsp;Watch Showreel
-              </a>
-              <a href={getResumeUrl()} target="_blank" rel="noopener noreferrer" className="btn btn-ghost">
-                📄 &nbsp;Resume
-              </a>
+              <Magnetic strength={0.2}>
+                <Link to="/portfolio" className="btn btn-primary">
+                  View Portfolio
+                </Link>
+              </Magnetic>
+              <Magnetic strength={0.2}>
+                <a href="#showreel" className="btn btn-ghost">
+                  ▷ &nbsp;Watch Showreel
+                </a>
+              </Magnetic>
+              <Magnetic strength={0.2}>
+                <a href={getResumeUrl()} target="_blank" rel="noopener noreferrer" className="btn btn-ghost">
+                  📄 &nbsp;Resume
+                </a>
+              </Magnetic>
             </motion.div>
           </div>
 
@@ -257,9 +300,11 @@ export default function Home() {
               )}
 
               <motion.div className="featured-works__cta" variants={fadeUp} custom={0.3}>
-                <Link to="/portfolio" className="btn btn-ghost">
-                  View All Work →
-                </Link>
+                <Magnetic strength={0.15}>
+                  <Link to="/portfolio" className="btn btn-ghost">
+                    View All Work →
+                  </Link>
+                </Magnetic>
               </motion.div>
             </AnimatedSection>
           </div>
@@ -306,9 +351,11 @@ export default function Home() {
                 Science from JP College of Engineering and a passion for 3D/VFX, I create worlds
                 that exist beyond the physical plane.
               </p>
-              <Link to="/about" className="btn btn-ghost" style={{ marginTop: '2rem' }}>
-                Learn More →
-              </Link>
+              <Magnetic strength={0.15}>
+                <Link to="/about" className="btn btn-ghost" style={{ marginTop: '2rem', display: 'inline-block' }}>
+                  Learn More →
+                </Link>
+              </Magnetic>
             </div>
             <div className="about-preview__image">
               <div className="about-preview__img-wrap">
@@ -381,6 +428,11 @@ export default function Home() {
               </motion.div>
             </AnimatedSection>
           </div>
+        </section>
+
+        {/* ─── SCROLLING BANNER ──────────────────────────────────────────── */}
+        <section style={{ paddingBottom: 'var(--space-2xl)' }}>
+          <KineticMarquee text="3D GENERALIST • ANIMATOR • CG ARTIST • " speed={20} />
         </section>
 
         {/* ─── FOOTER ────────────────────────────────────────────────────── */}

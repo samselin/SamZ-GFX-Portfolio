@@ -1,0 +1,45 @@
+/* src/components/KineticMarquee.css */
+.kinetic-marquee {
+  width: 100vw;
+  max-width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  display: flex;
+  background: var(--c-black);
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding: var(--space-md) 0;
+  position: relative;
+  z-index: var(--z-base);
+  user-select: none;
+}
+
+.kinetic-marquee__track {
+  display: flex;
+  flex-shrink: 0;
+  /* Animate from 0 to -100% of its own width */
+  animation: marquee-scroll linear infinite;
+}
+
+.kinetic-marquee__text {
+  font-size: clamp(3rem, 10vw, 7rem);
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(255, 255, 255, 0.15);
+  display: inline-block;
+  padding: 0 1rem;
+  transition: color 0.3s ease, -webkit-text-stroke 0.3s ease;
+}
+
+.kinetic-marquee__text:hover {
+  color: var(--c-accent);
+  -webkit-text-stroke: 1px transparent;
+}
+
+@keyframes marquee-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-100%);
+  }
+}

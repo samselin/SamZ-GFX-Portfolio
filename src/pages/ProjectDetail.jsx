@@ -1,10 +1,12 @@
 // src/pages/ProjectDetail.jsx
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState, useCallback } from 'react'
+import ReactDOM from 'react-dom'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import PageTransition from '../components/PageTransition'
+import LiquidImage from '../components/LiquidImage'
 import { useProject, useProjects } from '../hooks/useProjects'
 import { fadeUp, stagger } from '../animations/variants'
 import './ProjectDetail.css'
@@ -25,6 +27,30 @@ export default function ProjectDetail() {
   const { projects } = useProjects()
   const galleryRef = useRef(null)
   const heroRef = useRef(null)
+  const [lightboxIndex, setLightboxIndex] = useState(null)
+
+  const openLightbox = (index) => setLightboxIndex(index)
+  const closeLightbox = useCallback(() => setLightboxIndex(null), [])
+  const showPrev = useCallback(() =>
+    setLightboxIndex(i => (i > 0 ? i - 1 : project?.images?.length - 1)), [project])
+  const showNext = useCallback(() =>
+    setLightboxIndex(i => (i < project?.images?.length - 1 ? i + 1 : 0)), [project])
+
+  useEffect(() => {
+    if (lightboxIndex === null) return
+    // Lock page scroll so overlay stays centred on screen
+    document.body.style.overflow = 'hidden'
+    const onKey = (e) => {
+      if (e.key === 'Escape') closeLightbox()
+      if (e.key === 'ArrowLeft') showPrev()
+      if (e.key === 'ArrowRight') showNext()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => {
+      document.body.style.overflow = ''
+      window.removeEventListener('keydown', onKey)
+    }
+  }, [lightboxIndex, closeLightbox, showPrev, showNext])
 
   // Find next/prev projects
   const currentIndex = projects.findIndex((p) => p.id === id)
@@ -71,6 +97,25 @@ export default function ProjectDetail() {
           start: 'top 80%',
         },
       })
+
+      // Gallery Image Parallax
+      const images = gsap.utils.toArray('.gallery-item img')
+      images.forEach((img) => {
+        gsap.set(img, { scale: 1.15 })
+        gsap.fromTo(img, 
+          { yPercent: -8 },
+          {
+            yPercent: 8,
+            ease: 'none',
+            scrollTrigger: {
+              trigger: img.parentElement,
+              start: 'top bottom',
+              end: 'bottom top',
+              scrub: true,
+            }
+          }
+        )
+      })
     })
     return () => ctx.revert()
   }, [project])
@@ -103,11 +148,7 @@ export default function ProjectDetail() {
         {/* ─── HERO ─────────────────────────────────────────────────── */}
         <section className="project-hero">
           <div className="project-hero__media">
-            <img
-              className="project-hero__img"
-              src={heroImage}
-              alt={project.title}
-            />
+            <LiquidImage className="project-hero__img" src={heroImage} alt={project.title} />
             <div className="project-hero__vignette" />
           </div>
           <div className="project-hero__content container">
@@ -169,13 +210,61 @@ export default function ProjectDetail() {
                   <div
                     key={i}
                     className={`gallery-item ${i === 0 ? 'gallery-item--hero' : ''}`}
+                    onClick={() => openLightbox(i)}
+                    title="Click to view full screen"
                   >
                     <img src={src} alt={`${project.title} render ${i + 1}`} loading="lazy" />
+                    <div className="gallery-item__zoom-hint">⤢</div>
                   </div>
                 ))}
               </div>
             </div>
           </section>
+        )}
+
+        {/* ─── LIGHTBOX (portal – renders outside framer-motion transforms) ── */}
+        {lightboxIndex !== null && ReactDOM.createPortal(
+          <div className="lightbox-overlay" onClick={closeLightbox}>
+            <button
+              className="lightbox-back"
+              onClick={(e) => { e.stopPropagation(); closeLightbox(); }}
+              aria-label="Close"
+            >
+              ← Back
+            </button>
+
+            <span className="lightbox-counter mono">
+              {lightboxIndex + 1} / {project.images.length}
+            </span>
+
+            {project.images.length > 1 && (
+              <button
+                className="lightbox-arrow lightbox-arrow--prev"
+                onClick={(e) => { e.stopPropagation(); showPrev(); }}
+                aria-label="Previous image"
+              >
+                ‹
+              </button>
+            )}
+
+            <img
+              className="lightbox-img"
+              src={project.images[lightboxIndex]}
+              alt={`${project.title} fullscreen ${lightboxIndex + 1}`}
+              onClick={(e) => e.stopPropagation()}
+            />
+
+            {project.images.length > 1 && (
+              <button
+                className="lightbox-arrow lightbox-arrow--next"
+                onClick={(e) => { e.stopPropagation(); showNext(); }}
+                aria-label="Next image"
+              >
+                ›
+              </button>
+            )}
+          </div>,
+          document.body
         )}
 
         <div className="divider" />
@@ -271,6 +360,9 @@ export default function ProjectDetail() {
               <Link to={`/project/${prevProject.id}`} className="project-nav__link project-nav__link--prev">
                 <span className="mono">← Previous</span>
                 <span className="project-nav__name display">{prevProject.title}</span>
+                <div className="project-nav__preview project-nav__preview--left">
+                  <img src={prevProject.thumbnail || prevProject.images?.[0]} alt="" />
+                </div>
               </Link>
             ) : <div />}
 
@@ -278,6 +370,9 @@ export default function ProjectDetail() {
               <Link to={`/project/${nextProject.id}`} className="project-nav__link project-nav__link--next">
                 <span className="mono">Next →</span>
                 <span className="project-nav__name display">{nextProject.title}</span>
+                <div className="project-nav__preview project-nav__preview--right">
+                  <img src={nextProject.thumbnail || nextProject.images?.[0]} alt="" />
+                </div>
               </Link>
             ) : <div />}
           </div>
