@@ -12,27 +12,27 @@ function assertClient() {
  */
 export async function uploadFile(file) {
   assertClient()
-  
+
   const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
   const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
-  
+
   // If Cloudinary is configured via .env.local, use it to upload (bypasses Supabase 50MB limit)
   if (cloudName && uploadPreset) {
     const formData = new FormData()
     formData.append('file', file)
     formData.append('upload_preset', uploadPreset)
-    
+
     // 'auto' detects if it's an image, video, or raw file
     const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`, {
       method: 'POST',
       body: formData,
     })
-    
+
     if (!res.ok) {
       const errorData = await res.json()
       throw new Error(`Cloudinary Upload Error: ${errorData.error?.message || 'Unknown error'}`)
     }
-    
+
     const data = await res.json()
     return data.secure_url // Return the Cloudinary URL
   }
@@ -83,9 +83,9 @@ export async function deleteFile(publicUrl) {
       console.warn('Could not parse file path from URL:', publicUrl)
       return
     }
-    
+
     const filePath = urlParts[1]
-    
+
     const { error } = await supabase.storage
       .from(BUCKET)
       .remove([filePath])
@@ -105,7 +105,7 @@ export async function deleteFile(publicUrl) {
  */
 export async function uploadResume(file) {
   assertClient()
-  
+
   // We use a fixed path so the URL remains consistent.
   // We also set upsert: true to overwrite any existing resume.
   const filePath = `resume/resume.pdf`
@@ -135,7 +135,7 @@ export function getResumeUrl() {
   const { data } = supabase.storage
     .from(BUCKET)
     .getPublicUrl('resume/resume.pdf')
-  
+
   // return URL with cache busting query param
   return `${data.publicUrl}?t=${Date.now()}`
 }

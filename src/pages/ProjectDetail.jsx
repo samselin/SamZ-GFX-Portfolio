@@ -53,7 +53,7 @@ export default function ProjectDetail() {
   }, [lightboxIndex, closeLightbox, showPrev, showNext])
 
   // Find next/prev projects
-  const currentIndex = projects.findIndex((p) => p.id === id)
+  const currentIndex = projects.findIndex((p) => String(p.id) === String(id))
   const prevProject = projects[currentIndex - 1] || null
   const nextProject = projects[currentIndex + 1] || null
 
