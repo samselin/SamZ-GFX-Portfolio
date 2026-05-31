@@ -13,8 +13,8 @@ const LINKS = [
   },
   {
     label: 'LinkedIn',
-    value: 'linkedin.com/in/s_am_selin',
-    href: 'https://linkedin.com/in/samselin',
+    value: 'linkedin.com/in/s-am-selin',
+    href: 'https://www.linkedin.com/in/s-am-selin',
     desc: 'Professional network',
   },
   {
@@ -64,8 +64,7 @@ export default function Contact() {
               animate="visible"
               custom={0.2}
             >
-              Open to freelance projects, collaborations, and full-time opportunities.
-              Pick your preferred channel below.
+              Open to freelance projects, collaborations, and full-time opportunities. Pick your preferred channel below.
             </motion.p>
           </div>
 

@@ -222,10 +222,10 @@ export default function About() {
         {/* ─── TIMELINE ────────────────────────────────────────────── */}
         <section className="section about-timeline">
           <div className="container">
-            <span className="section-label">Journey</span>
-            <h2 className="section-title display" style={{ marginBottom: 'var(--space-2xl)' }}>
-              The Path
-            </h2>
+              <span className="section-label">Journey</span>
+              <h2 className="section-title display" style={{ marginBottom: 'var(--space-2xl)' }}>
+                The Path
+              </h2>
             <div className="timeline">
               {TIMELINE.map((item, i) => (
                 <div key={item.year} className="timeline-item">

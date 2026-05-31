@@ -1,0 +1,14 @@
+# Platforms and Their Purposes in this Project
+
+- **React** – Core UI library for building components and rendering.
+- **Vite** – Development server and bundler, provides fast HMR and builds production assets.
+- **Supabase** – Backend-as-a-Service: authentication, database (PostgreSQL), and storage via `@supabase/supabase-js`.
+- **React Router DOM** – Client‑side routing for navigating between pages (Home, Portfolio, ProjectDetail, About, Contact, Admin).
+- **Framer Motion** – Declarative animation library used for page transitions and UI effects.
+- **GSAP** – Imperative animation library used for scroll‑linked animations (e.g., scroll progress bar).
+- **Three.js** – Low‑level 3D rendering engine; used indirectly via React‑Three‑Fiber.
+- **@react-three/fiber** – React renderer for Three.js, enables embedding 3D components in React.
+- **@react-three/drei** – Helper components for Three.js (e.g., environment, orbit controls).
+- **Zustand** – Simple state‑management store for global UI state (e.g., theme, cursor state).
+- **React Query ( @tanstack/react-query )** – Data‑fetching and caching layer for Supabase queries.
+- **Node.js & npm** – Runtime and package manager for installing dependencies and running scripts (dev, build, preview).

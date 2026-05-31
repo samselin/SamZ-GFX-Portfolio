@@ -1,0 +1,69 @@
+# Core Structure and Architecture of the Sam Selin Portfolio App
+
+## 1. Project root
+```
+e:/Portfolio/sam-selin-portfolio/sam-selin-portfolio/
+├─ public/                # static assets (favicon, index.html)
+├─ src/                  # all source code
+│   ├─ components/       # reusable UI components (Navbar, CustomCursor, CursorGlow, WireframeSphere, FilmGrain, etc.)
+│   ├─ pages/            # page‑level components used by the router (Home, Portfolio, ProjectDetail, About, Contact)
+│   ├─ admin/            # admin‑only routes and dashboard components
+│   ├─ hooks/            # custom React hooks (e.g., useProjects for Supabase data fetching)
+│   ├─ styles/           # global CSS, CSS modules, and theme variables
+│   ├─ App.jsx            # root component, sets up routing, global UI elements, and providers
+│   └─ main.jsx           # React entry point, renders <App/> into <div id="root">
+├─ supabase/            # optional folder for Supabase client config (if separated)
+├─ vite.config.js        # Vite configuration (plugins, alias, env variables)
+├─ package.json          # scripts, dependencies, and project metadata
+└─ platforms.txt        # list of platforms and purposes (generated earlier)
+```
+
+## 2. Entry points
+- **main.jsx** – Calls `ReactDOM.createRoot(document.getElementById('root')).render(<App />);` and wraps the app with `BrowserRouter` and any context providers (React Query, Zustand).
+- **App.jsx** – Defines the layout:
+  - Global UI components (`Preloader`, `ScrollProgress`, `FilmGrain`, `CustomCursor`, `CursorGlow`).
+  - `<AnimatePresence>` for page transition animations.
+  - `<Routes>` with lazy‑loaded pages (`Home`, `Portfolio`, `ProjectDetail`, `About`, `Contact`, admin routes guarded by `AdminGuard`).
+  - Provides the Supabase client via a context or directly inside custom hooks.
+
+## 3. Routing (react‑router‑dom)
+```
+/                → Home
+/portfolio        → Portfolio (list of projects)
+/project/:id      → ProjectDetail (dynamic project page)
+/about            → About page
+/contact          → Contact page
+/admin/*          → Admin routes (protected by AdminGuard)
+```
+The router is wrapped in `<BrowserRouter>` in `main.jsx`. Lazy loading (`React.lazy`) keeps bundle size low.
+
+## 4. Data layer (Supabase + React Query)
+- **Supabase client** is created once (e.g., `createClient(SUPABASE_URL, SUPABASE_ANON_KEY)`) and exported.
+- **useProjects.js** – Custom hook that uses `useQuery` from `@tanstack/react-query` to fetch projects from Supabase. It returns `{ data, isLoading, error }`.
+- The hook is consumed in `Portfolio.jsx` and `ProjectDetail.jsx` to display project lists and single‑project details.
+
+## 5. State management (Zustand)
+- Simple global store holds UI‑wide state such as:
+  - Theme (light/dark)
+  - Cursor visibility and custom cursor position
+  - Any other flags needed across many components
+- Components call `useStore(state => state.someFlag)` to read/write.
+
+## 6. Animations & 3D
+- **Framer Motion** – Page transition wrappers (`<motion.div>`), hover effects, scroll progress bar animation.
+- **GSAP** – Used in `ScrollProgress` and other scroll‑linked effects for fine‑grained control.
+- **Three.js** via **@react-three/fiber** and **@react-three/drei** – Provides the 3‑D canvas used by `WireframeSphere.jsx`. The component uses a plain 2D canvas now, but the 3‑D libraries are available for future enhancements.
+
+## 7. Build & dev workflow (Vite)
+- `npm run dev` – Starts Vite dev server with HMR.
+- `npm run build` – Produces an optimized production bundle in `dist/`.
+- `npm run preview` – Serves the built files locally for testing.
+- Vite config includes React plugin, alias shortcuts, and environment variable injection for Supabase keys.
+
+## 8. Styling
+- Global CSS variables define the design system (colors, spacing, fonts).
+- Component‑specific CSS files (e.g., `WireframeSphere.css`, `CursorGlow.css`).
+- Layout is responsive, using CSS Grid/Flexbox and media queries for mobile support.
+
+---
+**Summary**: The app is a modern React SPA built with Vite, using Supabase for backend services, React Router for navigation, React Query for data fetching, Zustand for lightweight global state, and a mix of animation libraries (Framer Motion, GSAP) plus optional 3‑D support via Three.js. The folder structure separates concerns (components, pages, hooks, admin), and lazy loading keeps the initial bundle small.

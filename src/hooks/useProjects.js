@@ -12,10 +12,10 @@ export function useProjects() {
     async function fetch() {
       try {
         const data = await getProjects()
-        // Fall back to mock data if Firestore is empty
+        // Fall back to mock data if Supabase is empty
         setProjects(data.length > 0 ? data : mockProjects)
       } catch (err) {
-        console.warn('Firebase unavailable, using mock data:', err.message)
+        console.warn('Supabase unavailable, using mock data:', err.message)
         setProjects(mockProjects)
         setError(err)
       } finally {
@@ -30,6 +30,6 @@ export function useProjects() {
 
 export function useProject(id) {
   const { projects, loading } = useProjects()
-  const project = projects.find((p) => p.id === id) || null
+  const project = projects.find((p) => String(p.id) === String(id)) || null
   return { project, loading }
 }
