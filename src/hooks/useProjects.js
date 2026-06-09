@@ -1,4 +1,3 @@
-// src/hooks/useProjects.js
 import { useState, useEffect } from 'react'
 import { getProjects } from '../supabase/projects'
 import { mockProjects } from '../data/mockProjects'
@@ -9,20 +8,19 @@ export function useProjects() {
   const [error, setError] = useState(null)
 
   useEffect(() => {
-    async function fetch() {
+    async function load() {
       try {
         const data = await getProjects()
-        // Fall back to mock data if Supabase is empty
         setProjects(data.length > 0 ? data : mockProjects)
       } catch (err) {
-        console.warn('Supabase unavailable, using mock data:', err.message)
+        console.warn('Could not load projects, using mock data:', err.message)
         setProjects(mockProjects)
         setError(err)
       } finally {
         setLoading(false)
       }
     }
-    fetch()
+    load()
   }, [])
 
   return { projects, loading, error }
