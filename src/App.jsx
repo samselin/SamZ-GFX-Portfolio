@@ -3,11 +3,9 @@ import { Suspense, lazy } from 'react'
 import { Routes, Route, useLocation } from 'react-router-dom'
 import { AnimatePresence } from 'framer-motion'
 import Navbar from './components/Navbar'
-import CustomCursor from './components/CustomCursor'
 import Preloader from './components/Preloader'
 import ScrollProgress from './components/ScrollProgress'
 import FilmGrain from './components/FilmGrain'
-import CursorGlow from './components/CursorGlow'
 import AdminGuard from './admin/AdminGuard'
 
 // Lazy-load pages for performance
@@ -60,9 +58,6 @@ export default function App() {
       <ScrollProgress />
       <FilmGrain />
       
-      {/* Custom cursor (desktop only, hides system cursor) */}
-      <CustomCursor />
-      <CursorGlow />
 
       {/* Navbar — hidden on admin pages */}
       {!isAdmin && <Navbar />}
