@@ -59,9 +59,10 @@ export function useProject(id) {
   return { project: local || remoteProject, loading: loading || remoteLoading }
 }
 
-// AI Studio projects — fetches from Supabase, falls back to local data
-export function useAIProjects() {
-  const [projects, setProjects] = useState(aiProjects)
+// AI Studio projects — fetches from Supabase, falls back to local data.
+// Pass { adminMode: true } to skip mock fallback (admin should only see real DB entries).
+export function useAIProjects({ adminMode = false } = {}) {
+  const [projects, setProjects] = useState(adminMode ? [] : aiProjects)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
@@ -71,11 +72,12 @@ export function useAIProjects() {
       try {
         const data = await getAIProjects()
         if (cancelled) return
-        setProjects(data.length > 0 ? data : aiProjects)
+        // In admin mode never fall back to mock data (mock IDs aren't valid UUIDs)
+        setProjects(data.length > 0 ? data : (adminMode ? [] : aiProjects))
       } catch (err) {
         if (cancelled) return
         console.warn('Supabase unavailable, using local AI Studio data:', err.message)
-        setProjects(aiProjects)
+        setProjects(adminMode ? [] : aiProjects)
         setError(err)
       } finally {
         if (!cancelled) setLoading(false)
@@ -83,7 +85,7 @@ export function useAIProjects() {
     }
     fetch()
     return () => { cancelled = true }
-  }, [])
+  }, [adminMode])
 
   return { projects, loading, error, refresh: () => window.location.reload() }
 }

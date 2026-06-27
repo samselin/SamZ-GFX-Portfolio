@@ -60,7 +60,7 @@ const EMPTY_FORM = {
 export default function AdminDashboard() {
   const [scope, setScope] = useState('portfolio')
   const { projects: portfolioProjects, loading: portfolioLoading } = useProjects()
-  const { projects: aiProjectsList, loading: aiLoading } = useAIProjects()
+  const { projects: aiProjectsList, loading: aiLoading } = useAIProjects({ adminMode: true })
 
   const projects = scope === 'portfolio' ? portfolioProjects : aiProjectsList
   const loading = scope === 'portfolio' ? portfolioLoading : aiLoading
