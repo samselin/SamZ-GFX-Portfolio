@@ -5,6 +5,7 @@ import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import KineticMarquee from '../components/KineticMarquee'
 import PageTransition from '../components/PageTransition'
+import AnimatedDivider from '../components/AnimatedDivider'
 import { getResumeUrl } from '../supabase/storage'
 import { fadeUp, stagger } from '../animations/variants'
 import './About.css'
@@ -189,7 +190,7 @@ export default function About() {
           </div>
         </section>
 
-        <div className="divider" />
+        <AnimatedDivider />
 
         {/* ─── SKILLS BARS ─────────────────────────────────────────── */}
         <section className="section skills-bars">
@@ -217,7 +218,7 @@ export default function About() {
           </div>
         </section>
 
-        <div className="divider" />
+        <AnimatedDivider />
 
         {/* ─── TIMELINE ────────────────────────────────────────────── */}
         <section className="section about-timeline">
@@ -244,7 +245,7 @@ export default function About() {
           </div>
         </section>
 
-        <div className="divider" />
+        <AnimatedDivider />
 
         {/* ─── GOALS ───────────────────────────────────────────────── */}
         <section className="section about-goals">

@@ -18,6 +18,18 @@ export default function Navbar() {
   const [atTop, setAtTop] = useState(true)
   const [menuOpen, setMenuOpen] = useState(false)
   const [showAdminLogin, setShowAdminLogin] = useState(false)
+  const [available, setAvailable] = useState(true)
+
+  // Read availability status from localStorage (set in admin)
+  useEffect(() => {
+    const stored = localStorage.getItem('sam_available')
+    if (stored !== null) setAvailable(stored === 'true')
+    const onStorage = (e) => {
+      if (e.key === 'sam_available') setAvailable(e.newValue === 'true')
+    }
+    window.addEventListener('storage', onStorage)
+    return () => window.removeEventListener('storage', onStorage)
+  }, [])
 
   // Hidden admin trigger: click logo 3× within 2s
   const clickCount = useRef(0)
@@ -85,6 +97,14 @@ export default function Navbar() {
               </li>
             ))}
           </ul>
+
+          {/* Availability status badge */}
+          {available && (
+            <div className="navbar__status" title="Available for freelance & contract work">
+              <span className="navbar__status-dot" />
+              <span className="mono navbar__status-text">Available</span>
+            </div>
+          )}
 
           {/* CTA */}
           <Link to="/contact" className="navbar__cta btn btn-ghost">

@@ -96,6 +96,21 @@
   color: var(--c-white);
 }
 
+.project-hero__views {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: var(--space-md);
+  padding: 5px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-full);
+  font-size: 0.65rem;
+  letter-spacing: 0.14em;
+  color: var(--c-grey-5);
+  background: rgba(255, 255, 255, 0.02);
+  width: fit-content;
+}
+
 .project-hero__title {
   font-size: clamp(4rem, 10vw, 12rem);
   line-height: 0.9;

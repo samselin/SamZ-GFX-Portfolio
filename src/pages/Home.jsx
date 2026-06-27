@@ -13,6 +13,8 @@ import TextScramble from '../components/TextScramble'
 import KineticMarquee from '../components/KineticMarquee'
 import PageTransition from '../components/PageTransition'
 import ProjectCard from '../components/ProjectCard'
+import AnimatedDivider from '../components/AnimatedDivider'
+import NewsletterSignup from '../components/NewsletterSignup'
 import { useProjects } from '../hooks/useProjects'
 import { getResumeUrl } from '../supabase/storage'
 import { fadeUp, stagger } from '../animations/variants'
@@ -310,7 +312,7 @@ export default function Home() {
           </div>
         </section>
 
-        <div className="divider" />
+        <AnimatedDivider />
 
         {/* ─── SKILLS ────────────────────────────────────────────────────── */}
         <section className="section skills-section">
@@ -333,7 +335,7 @@ export default function Home() {
           </div>
         </section>
 
-        <div className="divider" />
+        <AnimatedDivider />
 
         {/* ─── ABOUT PREVIEW ─────────────────────────────────────────────── */}
         <section className="section about-preview">
@@ -373,7 +375,7 @@ export default function Home() {
           </div>
         </section>
 
-        <div className="divider" />
+        <AnimatedDivider />
 
         {/* ─── SHOWREEL ──────────────────────────────────────────────────── */}
         <section className="section showreel-section" id="showreel">
@@ -394,7 +396,7 @@ export default function Home() {
           </div>
         </section>
 
-        <div className="divider" />
+        <AnimatedDivider />
 
         {/* ─── CONTACT CTA ───────────────────────────────────────────────── */}
         <section className="section contact-cta">
@@ -438,12 +440,17 @@ export default function Home() {
         {/* ─── FOOTER ────────────────────────────────────────────────────── */}
         <footer className="footer">
           <div className="container footer__inner">
-            <p className="mono footer__copy">
-              © {new Date().getFullYear()} Samz GFX · All rights reserved
-            </p>
-            <p className="mono footer__made">
-              Crafted with intent
-            </p>
+            <div className="footer__col">
+              <NewsletterSignup />
+            </div>
+            <div className="footer__col footer__col--right">
+              <p className="mono footer__copy">
+                © {new Date().getFullYear()} Samz GFX · All rights reserved
+              </p>
+              <p className="mono footer__made">
+                Crafted with intent
+              </p>
+            </div>
           </div>
         </footer>
 

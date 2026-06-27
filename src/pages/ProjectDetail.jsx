@@ -7,7 +7,10 @@ import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import PageTransition from '../components/PageTransition'
 import LiquidImage from '../components/LiquidImage'
+import AnimatedDivider from '../components/AnimatedDivider'
 import { useProject, useProjects, useAIProjects } from '../hooks/useProjects'
+import { incrementProjectViews } from '../supabase/projects'
+import { incrementAIProjectViews } from '../supabase/aiProjects'
 import { fadeUp, stagger } from '../animations/variants'
 import './ProjectDetail.css'
 
@@ -61,6 +64,17 @@ export default function ProjectDetail() {
       window.removeEventListener('keydown', onKey)
     }
   }, [lightboxIndex, closeLightbox, showPrev, showNext])
+
+  // Fire-and-forget view increment (mount only, only when id changes)
+  useEffect(() => {
+    if (!id) return
+    if (isAIProject) {
+      incrementAIProjectViews(id)
+    } else {
+      incrementProjectViews(id)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id])
 
   // Find next/prev projects
   const currentIndex = projects.findIndex((p) => String(p.id) === String(id))
@@ -171,6 +185,11 @@ export default function ProjectDetail() {
               <Link to={backHref} className="project-hero__back mono">
                 ← {isAIProject ? 'AI Studio' : 'Portfolio'}
               </Link>
+              {project.views > 0 && (
+                <span className="mono project-hero__views">
+                  👁 {project.views.toLocaleString()} {project.views === 1 ? 'view' : 'views'}
+                </span>
+              )}
               <span className="section-label" style={{ marginTop: '1.5rem' }}>
                 {isAIProject
                   ? (project.category === 'video' ? 'AI Video' : 'AI Image')
@@ -215,7 +234,7 @@ export default function ProjectDetail() {
           </div>
         </section>
 
-        <div className="divider" />
+        <AnimatedDivider />
 
         {/* ─── IMAGE GALLERY ─────────────────────────────────────────── */}
         {project.images?.length > 0 && (
@@ -284,7 +303,7 @@ export default function ProjectDetail() {
           document.body
         )}
 
-        <div className="divider" />
+        <AnimatedDivider />
 
         {/* ─── BREAKDOWN ─────────────────────────────────────────────── */}
         {project.breakdowns && project.breakdowns.length > 0 && (
@@ -312,7 +331,7 @@ export default function ProjectDetail() {
         {/* ─── SOFTWARE USED ─────────────────────────────────────────── */}
         {project.software?.length > 0 && (
           <>
-            <div className="divider" />
+            <AnimatedDivider />
             <section className="section project-software">
               <div className="container">
                 <span className="section-label">Tools Used</span>
@@ -338,7 +357,7 @@ export default function ProjectDetail() {
         {/* ─── TURNTABLE VIDEO ───────────────────────────────────────── */}
         {project.video && (
           <>
-            <div className="divider" />
+            <AnimatedDivider />
             <section className="section project-video">
               <div className="container">
                 <span className="section-label">Turntable</span>
@@ -368,7 +387,7 @@ export default function ProjectDetail() {
           </>
         )}
 
-        <div className="divider" />
+        <AnimatedDivider />
 
         {/* ─── NEXT / PREV NAVIGATION ────────────────────────────────── */}
         <nav className="project-nav">

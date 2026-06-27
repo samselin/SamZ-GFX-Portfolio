@@ -1,5 +1,5 @@
 // src/admin/AdminDashboard.jsx
-import { useState, useRef } from 'react'
+import { useState, useRef, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { addProject, updateProject, deleteProject, getProject } from '../supabase/projects'
@@ -11,6 +11,8 @@ import {
 } from '../supabase/aiProjects'
 import { uploadFile, deleteFile, uploadResume } from '../supabase/storage'
 import { useProjects, useAIProjects } from '../hooks/useProjects'
+import Magnetic from '../components/Magnetic'
+import { generateResumePDF } from '../utils/resumePdf'
 import './AdminDashboard.css'
 
 const DEFAULT_BREAKDOWNS = [
@@ -66,11 +68,31 @@ export default function AdminDashboard() {
   const loading = scope === 'portfolio' ? portfolioLoading : aiLoading
   const config = SCOPE_CONFIG[scope]
 
+  const [search, setSearch] = useState('')
+  const filteredProjects = useMemo(() => {
+    if (!search.trim()) return projects
+    const q = search.toLowerCase()
+    return projects.filter((p) => {
+      const haystack = [
+        p.title,
+        p.category,
+        p.year,
+        ...(p.software || []),
+      ]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase()
+      return haystack.includes(q)
+    })
+  }, [projects, search])
+
   const [view, setView] = useState('list')
   const [editingProject, setEditingProject] = useState(null)
   const [galleryProject, setGalleryProject] = useState(null)
+  const [lightboxSrc, setLightboxSrc] = useState(null)
   const [form, setForm] = useState(EMPTY_FORM)
   const [saving, setSaving] = useState(false)
+  const [pdfGenerating, setPdfGenerating] = useState(false)
   const [uploadProgress, setUploadProgress] = useState('')
   const [status, setStatus] = useState('')
   const [confirmDelete, setConfirmDelete] = useState(null)
@@ -423,22 +445,49 @@ export default function AdminDashboard() {
                 {config.label}
                 <span className="mono admin-panel__scope">· {scope === 'ai' ? 'image / video' : '3D / VFX'}</span>
               </h1>
-              <button className="btn btn-primary" onClick={openUpload}>
-                + New Project
-              </button>
+              <Magnetic strength={0.2}>
+                <button className="btn btn-primary" onClick={openUpload}>
+                  + New Project
+                </button>
+              </Magnetic>
+            </div>
+
+            <div className="admin-search">
+              <span className="admin-search__icon mono">⌕</span>
+              <input
+                type="text"
+                className="admin-search__input"
+                placeholder={`Search ${scope === 'ai' ? 'AI Studio' : '3D'} projects by title, category, year, or tools…`}
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+              {search && (
+                <button
+                  type="button"
+                  className="admin-search__clear mono"
+                  onClick={() => setSearch('')}
+                  aria-label="Clear search"
+                >✕</button>
+              )}
             </div>
 
             {loading ? (
               <p className="mono admin-empty">Loading...</p>
-            ) : projects.length === 0 ? (
+            ) : filteredProjects.length === 0 ? (
               <p className="mono admin-empty">
-                No {scope === 'ai' ? 'AI studio' : ''} projects yet. Add your first one.
+                {search
+                  ? `No ${scope === 'ai' ? 'AI' : ''} projects match "${search}".`
+                  : `No ${scope === 'ai' ? 'AI studio' : ''} projects yet. Add your first one.`}
               </p>
             ) : (
               <div className="admin-project-list">
-                {projects.map((project) => (
+                {filteredProjects.map((project) => (
                   <div key={project.id} className="admin-project-row">
-                    <div className="admin-project-row__thumb">
+                    <div
+                      className="admin-project-row__thumb admin-project-row__thumb--clickable"
+                      onClick={() => project.thumbnail && setLightboxSrc(project.thumbnail)}
+                      title="Click to preview"
+                    >
                       {project.thumbnail
                         ? <img src={project.thumbnail} alt={project.title} />
                         : <div className="admin-project-row__thumb-empty" />
@@ -482,9 +531,11 @@ export default function AdminDashboard() {
               <h1 className="display admin-panel__title">
                 {view === 'edit' ? 'Edit' : 'New'} {config.label.slice(0, -1)}
               </h1>
-              <button className="btn btn-ghost" onClick={() => setView('list')}>
-                ← Back
-              </button>
+              <Magnetic strength={0.15}>
+                <button className="btn btn-ghost" onClick={() => setView('list')}>
+                  ← Back
+                </button>
+              </Magnetic>
             </div>
 
             <form onSubmit={handleSubmit} className="admin-form">
@@ -676,9 +727,11 @@ export default function AdminDashboard() {
               <h1 className="display admin-panel__title">
                 Manage Gallery: {galleryProject.title}
               </h1>
-              <button className="btn btn-ghost" onClick={() => setView('list')}>
-                ← Back
-              </button>
+              <Magnetic strength={0.15}>
+                <button className="btn btn-ghost" onClick={() => setView('list')}>
+                  ← Back
+                </button>
+              </Magnetic>
             </div>
 
             <form onSubmit={handleGallerySubmit} className="admin-form">
@@ -798,10 +851,73 @@ export default function AdminDashboard() {
                   {status}
                 </p>
               )}
+
+              {/* ─── AUTO-GENERATED PREVIEW ──────────────────────────────── */}
+              <div className="admin-divider" style={{ margin: '2.5rem 0 1.5rem' }}>
+                <span className="mono admin-divider__label">OR · Auto-generate</span>
+              </div>
+
+              <p className="about-bio" style={{ marginBottom: '1rem', color: 'var(--c-grey-4)', fontSize: '0.95rem' }}>
+                Generate a styled PDF from your latest projects + profile data on the fly — no upload needed. Useful as a quick preview or as the final document after you've entered your details above.
+              </p>
+
+              <Magnetic strength={0.15}>
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  disabled={pdfGenerating}
+                  onClick={async () => {
+                    try {
+                      setPdfGenerating(true)
+                      setStatus('')
+                      await generateResumePDF()
+                      setStatus('✓ PDF generated — check your downloads.')
+                    } catch (err) {
+                      setStatus(err.message || 'PDF generation failed.')
+                    } finally {
+                      setPdfGenerating(false)
+                    }
+                  }}
+                  style={{ minWidth: 220 }}
+                >
+                  {pdfGenerating ? '⏳ Generating…' : '⚡ Generate Preview PDF'}
+                </button>
+              </Magnetic>
             </div>
           </div>
         )}
       </main>
+
+      {/* Thumbnail Lightbox Preview */}
+      <AnimatePresence>
+        {lightboxSrc && (
+          <motion.div
+            className="admin-confirm-overlay"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setLightboxSrc(null)}
+          >
+            <button
+              className="lightbox-back"
+              style={{ position: 'absolute', top: 'var(--space-xl)', left: 'var(--space-xl)', zIndex: 1 }}
+              onClick={(e) => { e.stopPropagation(); setLightboxSrc(null); }}
+            >
+              ← Close
+            </button>
+            <motion.img
+              src={lightboxSrc}
+              alt="Preview"
+              className="lightbox-img"
+              initial={{ scale: 0.93, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.93, opacity: 0 }}
+              transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
+              onClick={(e) => e.stopPropagation()}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Delete Confirm */}
       <AnimatePresence>

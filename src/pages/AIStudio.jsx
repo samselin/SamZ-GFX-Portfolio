@@ -3,6 +3,7 @@ import { useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import PageTransition from '../components/PageTransition'
+import Magnetic from '../components/Magnetic'
 import { useAIProjects } from '../hooks/useProjects'
 import './AIStudio.css'
 
@@ -16,6 +17,7 @@ export default function AIStudio() {
   const trackRef = useRef(null)
   const { projects, loading } = useAIProjects()
   const [filter, setFilter] = useState('all')
+  const [scrollProgress, setScrollProgress] = useState(0)
 
   const visible = useMemo(() => {
     if (filter === 'all') return projects
@@ -28,6 +30,24 @@ export default function AIStudio() {
     if (!track) return
     e.preventDefault()
     track.scrollLeft += e.deltaY * 1.5
+  }
+
+  // Track scroll position for the progress bar
+  const handleTrackScroll = () => {
+    const track = trackRef.current
+    if (!track) return
+    const max = track.scrollWidth - track.clientWidth
+    const pct = max > 0 ? track.scrollLeft / max : 0
+    setScrollProgress(Math.max(0, Math.min(1, pct)))
+  }
+
+  // Scroll left/right by one card width (for arrow controls)
+  const nudge = (dir) => {
+    const track = trackRef.current
+    if (!track) return
+    const card = track.querySelector('.h-card')
+    const step = card ? card.getBoundingClientRect().width + 20 : 420
+    track.scrollBy({ left: dir * step, behavior: 'smooth' })
   }
 
   return (
@@ -68,15 +88,16 @@ export default function AIStudio() {
         <div className="container ai-studio__filter-inner">
           <div className="ai-studio__filter" role="tablist" aria-label="AI Studio categories">
             {FILTERS.map((f) => (
-              <button
-                key={f.id}
-                role="tab"
-                aria-selected={filter === f.id}
-                className={`ai-studio__filter-btn ${filter === f.id ? 'active' : ''}`}
-                onClick={() => setFilter(f.id)}
-              >
-                <span className="mono">{f.label}</span>
-              </button>
+              <Magnetic key={f.id} strength={0.15}>
+                <button
+                  role="tab"
+                  aria-selected={filter === f.id}
+                  className={`ai-studio__filter-btn ${filter === f.id ? 'active' : ''}`}
+                  onClick={() => setFilter(f.id)}
+                >
+                  <span className="mono">{f.label}</span>
+                </button>
+              </Magnetic>
             ))}
           </div>
           <span className="mono ai-studio__count">
@@ -85,30 +106,62 @@ export default function AIStudio() {
         </div>
 
         {/* ─── HORIZONTAL SCROLL TRACK (mirrors Portfolio page) ───── */}
-        <div
-          className="h-scroll-track"
-          ref={trackRef}
-          onWheel={handleWheel}
-        >
-          {loading
-            ? [...Array(6)].map((_, i) => (
-                <div key={i} className="h-card h-card--loading" />
-              ))
-            : visible.length === 0
-              ? (
-                <div className="ai-studio__empty">
-                  <span className="mono">No projects in this category yet.</span>
-                </div>
-              )
-              : visible.map((project, i) => (
-                <HorizontalAICard key={project.id} project={project} index={i} />
-              ))
-          }
+        <div className="h-scroll-track-wrap">
+          <button
+            className="h-scroll-arrow h-scroll-arrow--left"
+            onClick={() => nudge(-1)}
+            aria-label="Scroll left"
+            disabled={scrollProgress <= 0}
+          >‹</button>
+          <div
+            className="h-scroll-track"
+            ref={trackRef}
+            onWheel={handleWheel}
+            onScroll={handleTrackScroll}
+          >
+            {loading
+              ? [...Array(6)].map((_, i) => (
+                  <div key={i} className="h-card h-card--loading" />
+                ))
+              : visible.length === 0
+                ? (
+                  <div className="ai-studio__empty">
+                    <span className="mono">No projects in this category yet.</span>
+                  </div>
+                )
+                : visible.map((project, i) => (
+                  <HorizontalAICard
+                    key={project.id}
+                    project={project}
+                    index={i}
+                    featured={i === 0 && filter === 'all'}
+                  />
+                ))
+            }
+          </div>
+          <button
+            className="h-scroll-arrow h-scroll-arrow--right"
+            onClick={() => nudge(1)}
+            aria-label="Scroll right"
+            disabled={scrollProgress >= 1}
+          >›</button>
         </div>
 
-        {/* Scroll hint bar */}
+        {/* Scroll progress bar + hint */}
+        <div className="h-scroll-progress-row container">
+          <div className="h-scroll-progress">
+            <div
+              className="h-scroll-progress__fill"
+              style={{ transform: `scaleX(${scrollProgress})` }}
+            />
+          </div>
+          <span className="mono h-scroll-progress__pct">
+            {Math.round(scrollProgress * 100).toString().padStart(2, '0')}%
+          </span>
+        </div>
+
         <div className="h-scroll-hint container">
-          <span className="mono">← Drag or scroll to navigate →</span>
+          <span className="mono">← Drag, scroll, or use arrows to navigate →</span>
         </div>
 
       </div>
@@ -116,7 +169,7 @@ export default function AIStudio() {
   )
 }
 
-function HorizontalAICard({ project, index }) {
+function HorizontalAICard({ project, index, featured = false }) {
   const cardRef = useRef(null)
 
   const handleMouseMove = (e) => {
@@ -149,11 +202,15 @@ function HorizontalAICard({ project, index }) {
     >
       <Link
         to={`/project/${project.id}`}
-        className="h-card__link"
+        className={`h-card__link ${featured ? 'h-card__link--featured' : ''}`}
         ref={cardRef}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
       >
+        {featured && (
+          <span className="h-card__featured mono">★ Featured</span>
+        )}
+
         <span className="h-card__num mono">
           {String(index + 1).padStart(2, '0')}
         </span>

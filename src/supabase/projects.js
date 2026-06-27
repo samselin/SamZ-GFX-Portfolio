@@ -59,3 +59,27 @@ export async function deleteProject(id) {
     .eq('id', id)
   if (error) throw error
 }
+
+/**
+ * Fire-and-forget view increment. Reads current value, increments by 1, writes back.
+ * Safe to call from a useEffect without await — failures are logged but never thrown.
+ */
+export async function incrementProjectViews(id) {
+  assertClient()
+  try {
+    const { data, error: readErr } = await supabase
+      .from(TABLE)
+      .select('views')
+      .eq('id', id)
+      .single()
+    if (readErr) throw readErr
+    const next = (data?.views ?? 0) + 1
+    const { error: writeErr } = await supabase
+      .from(TABLE)
+      .update({ views: next })
+      .eq('id', id)
+    if (writeErr) throw writeErr
+  } catch (err) {
+    console.warn('incrementProjectViews failed:', err.message)
+  }
+}

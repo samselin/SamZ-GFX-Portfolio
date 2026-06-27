@@ -100,6 +100,39 @@
   letter-spacing: 0.06em;
 }
 
+/* Availability status badge */
+.navbar__status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border: 1px solid rgba(76, 175, 80, 0.25);
+  border-radius: var(--radius-full);
+  background: rgba(76, 175, 80, 0.06);
+  flex-shrink: 0;
+}
+
+.navbar__status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #4caf50;
+  box-shadow: 0 0 8px rgba(76, 175, 80, 0.8);
+  animation: statusPulse 2s ease-in-out infinite;
+}
+
+.navbar__status-text {
+  font-size: 0.65rem;
+  letter-spacing: 0.14em;
+  color: #a3d9a5;
+  text-transform: uppercase;
+}
+
+@keyframes statusPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: 0.6; transform: scale(0.85); }
+}
+
 /* Hamburger */
 .navbar__hamburger {
   display: none;
@@ -158,7 +191,8 @@
     padding: 0 var(--space-lg);
   }
   .navbar__links,
-  .navbar__cta {
+  .navbar__cta,
+  .navbar__status {
     display: none;
   }
   .navbar__hamburger {

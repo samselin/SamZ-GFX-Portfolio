@@ -5,6 +5,7 @@ import { AnimatePresence } from 'framer-motion'
 import Navbar from './components/Navbar'
 import Preloader from './components/Preloader'
 import ScrollProgress from './components/ScrollProgress'
+import ScrollToTop from './components/ScrollToTop'
 import FilmGrain from './components/FilmGrain'
 import AdminGuard from './admin/AdminGuard'
 
@@ -16,6 +17,7 @@ const ProjectDetail  = lazy(() => import('./pages/ProjectDetail'))
 const About          = lazy(() => import('./pages/About'))
 const Contact        = lazy(() => import('./pages/Contact'))
 const AdminDashboard = lazy(() => import('./admin/AdminDashboard'))
+const NotFound       = lazy(() => import('./pages/NotFound'))
 
 function PageLoader() {
   return (
@@ -62,6 +64,7 @@ export default function App() {
 
       {/* Navbar — hidden on admin pages */}
       {!isAdmin && <Navbar />}
+      {!isAdmin && <ScrollToTop />}
 
       {/* Page transitions with AnimatePresence */}
       <AnimatePresence mode="wait" initial={false}>
@@ -82,13 +85,7 @@ export default function App() {
               }
             />
             {/* 404 fallback */}
-            <Route path="*" element={
-              <div className="page container" style={{ display:'flex', alignItems:'center', justifyContent:'center', flexDirection:'column', gap:'2rem' }}>
-                <h1 className="display" style={{ fontSize: 'clamp(5rem, 12vw, 10rem)', color: 'var(--c-white)' }}>404</h1>
-                <p style={{ color: 'var(--c-grey-5)' }}>This page does not exist.</p>
-                <a href="/" className="btn btn-ghost">← Go Home</a>
-              </div>
-            } />
+            <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>
       </AnimatePresence>

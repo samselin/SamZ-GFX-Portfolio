@@ -61,3 +61,26 @@ export async function deleteAIProject(id) {
     .eq('id', id)
   if (error) throw error
 }
+
+/**
+ * Fire-and-forget view increment. Safe to call from a useEffect.
+ */
+export async function incrementAIProjectViews(id) {
+  assertClient()
+  try {
+    const { data, error: readErr } = await supabase
+      .from(TABLE)
+      .select('views')
+      .eq('id', id)
+      .single()
+    if (readErr) throw readErr
+    const next = (data?.views ?? 0) + 1
+    const { error: writeErr } = await supabase
+      .from(TABLE)
+      .update({ views: next })
+      .eq('id', id)
+    if (writeErr) throw writeErr
+  } catch (err) {
+    console.warn('incrementAIProjectViews failed:', err.message)
+  }
+}

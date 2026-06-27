@@ -90,6 +90,38 @@ button {
   background: none;
 }
 
+/* ─── FOCUS-VISIBLE RINGS ─────────────────────────────────────────── */
+:focus-visible {
+  outline: 2px solid var(--c-accent);
+  outline-offset: 3px;
+  border-radius: var(--radius-sm);
+}
+
+button:focus-visible,
+.btn:focus-visible,
+a:focus-visible,
+.navbar__link:focus-visible,
+.navbar__logo:focus-visible,
+.navbar__cta:focus-visible {
+  outline-offset: 4px;
+}
+
+/* Remove default ring on mouse, keep on keyboard */
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+.admin-input:focus-visible {
+  outline: 2px solid var(--c-accent);
+  outline-offset: 2px;
+  border-color: rgba(255, 255, 255, 0.3) !important;
+}
+
+/* Hide rings inside the preloader canvas / film grain */
+.film-grain:focus-visible,
+.preloader:focus-visible {
+  outline: none;
+}
+
 /* ─── SCROLLBAR ──────────────────────────────────────────────────── */
 /* Chrome/Safari/Edge */
 ::-webkit-scrollbar {
@@ -214,6 +246,55 @@ button {
   width: 100%;
   height: 1px;
   background: linear-gradient(90deg, transparent, var(--c-grey-3), transparent);
+  transform-origin: center;
+}
+
+.divider.in-view {
+  animation: dividerDraw 1.4s var(--ease-out-expo) forwards;
+}
+
+@keyframes dividerDraw {
+  0% {
+    transform: scaleX(0);
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+  }
+  100% {
+    transform: scaleX(1);
+    opacity: 1;
+  }
+}
+
+/* ─── SCROLL TO TOP ───────────────────────────────────────────────── */
+.scroll-to-top {
+  position: fixed;
+  right: var(--space-lg);
+  bottom: var(--space-lg);
+  z-index: var(--z-nav);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 18px;
+  border-radius: var(--radius-full);
+  color: var(--c-white);
+  cursor: pointer;
+  font-size: 0.7rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.scroll-to-top .mono {
+  color: var(--c-white);
+}
+
+@media (max-width: 768px) {
+  .scroll-to-top {
+    right: var(--space-md);
+    bottom: var(--space-md);
+    padding: 8px 14px;
+  }
 }
 
 /* ─── PAGE WRAPPER ───────────────────────────────────────────────── */
@@ -271,6 +352,100 @@ button {
   font-size: 0.62rem;
   letter-spacing: 0.14em;
   color: #555555;
+}
+
+/* ─── HORIZONTAL SCROLL: ARROWS + PROGRESS ───────────────────────── */
+.h-scroll-track-wrap {
+  position: relative;
+}
+
+.h-scroll-arrow {
+  position: absolute;
+  top: 40%;
+  z-index: 5;
+  width: 44px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6rem;
+  line-height: 1;
+  background: rgba(8, 8, 8, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: var(--c-white);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+  transition: opacity var(--duration-fast) ease,
+              background var(--duration-fast) ease,
+              border-color var(--duration-fast) ease;
+}
+
+.h-scroll-arrow:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.h-scroll-arrow:disabled {
+  opacity: 0.25;
+  cursor: not-allowed;
+}
+
+.h-scroll-arrow--left  { left: 12px; }
+.h-scroll-arrow--right { right: 12px; }
+
+.h-scroll-progress-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding-top: var(--space-md);
+  padding-bottom: var(--space-sm);
+}
+
+.h-scroll-progress {
+  flex: 1;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.h-scroll-progress__fill {
+  height: 100%;
+  width: 100%;
+  background: linear-gradient(90deg, var(--c-accent), var(--c-grey-6));
+  transform-origin: left;
+  transform: scaleX(0);
+  transition: transform 0.15s ease-out;
+  border-radius: var(--radius-full);
+}
+
+.h-scroll-progress__pct {
+  font-size: 0.65rem;
+  letter-spacing: 0.14em;
+  color: var(--c-grey-4);
+  min-width: 36px;
+  text-align: right;
+}
+
+/* ─── FEATURED BADGE ON HORIZONTAL CARDS ─────────────────────────── */
+.h-card__link--featured {
+  border-color: rgba(232, 224, 208, 0.3);
+}
+
+.h-card__featured {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 6;
+  font-size: 0.58rem;
+  letter-spacing: 0.14em;
+  color: var(--c-black);
+  background: var(--c-accent);
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  text-transform: uppercase;
+  box-shadow: 0 4px 14px rgba(232, 224, 208, 0.25);
 }
 
 /* ─── HORIZONTAL CARD (shared) ────────────────────────────────────── */
@@ -459,5 +634,9 @@ button {
 
   .h-card__title {
     font-size: 1.6rem;
+  }
+
+  .h-scroll-arrow {
+    display: none;
   }
 }
