@@ -74,6 +74,55 @@
   background: rgba(255,255,255,0.07);
 }
 
+/* ─── SCOPE TOGGLE (3D Projects / AI Studio) ──────────────────────── */
+.admin-scope-toggle {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: var(--space-md);
+  margin-bottom: var(--space-md);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: var(--radius-sm);
+  background: rgba(0,0,0,0.25);
+}
+
+.admin-scope-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  color: var(--c-grey-5);
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: all var(--duration-fast) ease;
+  text-align: left;
+}
+
+.admin-scope-btn:hover {
+  color: var(--c-white);
+  background: rgba(255,255,255,0.04);
+}
+
+.admin-scope-btn.active {
+  color: var(--c-black);
+  background: var(--c-white);
+}
+
+.admin-panel__scope {
+  display: inline-block;
+  margin-left: var(--space-md);
+  font-size: 0.65rem;
+  letter-spacing: 0.16em;
+  color: var(--c-grey-4);
+  vertical-align: middle;
+}
+
 .admin-logout {
   color: var(--c-grey-4) !important;
   margin-top: auto;
@@ -262,6 +311,22 @@
 .admin-textarea {
   resize: vertical;
   min-height: 100px;
+}
+
+.admin-select {
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3e%3cpath fill='%2393b4d4' d='M6 8L0 0h12z'/%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  background-size: 10px;
+  padding-right: 36px;
+  cursor: pointer;
+}
+
+.admin-select option {
+  background: var(--c-grey-1);
+  color: var(--c-white);
 }
 
 /* ─── BREAKDOWNS ─────────────────────────────────────────────────── */

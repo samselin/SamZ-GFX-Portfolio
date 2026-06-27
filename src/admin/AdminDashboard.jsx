@@ -3,8 +3,14 @@ import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { addProject, updateProject, deleteProject, getProject } from '../supabase/projects'
+import {
+  addAIProject,
+  updateAIProject,
+  deleteAIProject,
+  getAIProject,
+} from '../supabase/aiProjects'
 import { uploadFile, deleteFile, uploadResume } from '../supabase/storage'
-import { useProjects } from '../hooks/useProjects'
+import { useProjects, useAIProjects } from '../hooks/useProjects'
 import './AdminDashboard.css'
 
 const DEFAULT_BREAKDOWNS = [
@@ -13,6 +19,32 @@ const DEFAULT_BREAKDOWNS = [
   { label: 'Lighting', desc: 'HDRI environment, area lights, and mood-defining light placement.' },
   { label: 'Rendering', desc: 'Cycles / EEVEE render pass setup, noise reduction, and compositing.' },
 ]
+
+// Categories supported per scope
+const SCOPE_CONFIG = {
+  portfolio: {
+    label: '3D Projects',
+    icon: '◈',
+    categoryOptions: [
+      'Product Visualization',
+      'Architectural Visualization',
+      'Abstract Art',
+      'Motion Graphics',
+      'VFX',
+      'Character Art',
+    ],
+    hasBreakdowns: true,
+    backRoute: '/portfolio',
+  },
+  ai: {
+    label: 'AI Studio',
+    icon: '◇',
+    categoryOptions: ['image', 'video'],
+    categoryLabels: { image: 'AI Image', video: 'AI Video' },
+    hasBreakdowns: false,
+    backRoute: '/ai-studio',
+  },
+}
 
 const EMPTY_FORM = {
   title: '',
@@ -26,7 +58,14 @@ const EMPTY_FORM = {
 }
 
 export default function AdminDashboard() {
-  const { projects, loading } = useProjects()
+  const [scope, setScope] = useState('portfolio')
+  const { projects: portfolioProjects, loading: portfolioLoading } = useProjects()
+  const { projects: aiProjectsList, loading: aiLoading } = useAIProjects()
+
+  const projects = scope === 'portfolio' ? portfolioProjects : aiProjectsList
+  const loading = scope === 'portfolio' ? portfolioLoading : aiLoading
+  const config = SCOPE_CONFIG[scope]
+
   const [view, setView] = useState('list')
   const [editingProject, setEditingProject] = useState(null)
   const [galleryProject, setGalleryProject] = useState(null)
@@ -62,8 +101,21 @@ export default function AdminDashboard() {
     }
   }
 
-  const openUpload = () => {
+  const switchScope = (nextScope) => {
+    setScope(nextScope)
+    setView('list')
+    setEditingProject(null)
+    setGalleryProject(null)
     setForm(EMPTY_FORM)
+    setStatus('')
+    setUploadProgress('')
+  }
+
+  const openUpload = () => {
+    setForm({
+      ...EMPTY_FORM,
+      category: scope === 'ai' ? 'image' : '',
+    })
     setEditingProject(null)
     setView('upload')
     setStatus('')
@@ -80,7 +132,9 @@ export default function AdminDashboard() {
       year: project.year || new Date().getFullYear(),
       images: project.images || [],
       video: project.video || '',
-      breakdowns: project.breakdowns || [...DEFAULT_BREAKDOWNS],
+      breakdowns: project.breakdowns?.length
+        ? project.breakdowns
+        : [...DEFAULT_BREAKDOWNS],
     })
     setView('edit')
     setStatus('')
@@ -90,7 +144,7 @@ export default function AdminDashboard() {
   const openGalleryManager = (project) => {
     setGalleryProject(project)
     setForm({
-      ...EMPTY_FORM, // reset other fields just in case
+      ...EMPTY_FORM,
       images: project.images || [],
       video: project.video || '',
     })
@@ -190,6 +244,24 @@ export default function AdminDashboard() {
     }
   }
 
+  const buildPayload = () => {
+    const data = {
+      title: form.title,
+      category: form.category,
+      description: form.description,
+      software: form.software.split(',').map((s) => s.trim()).filter(Boolean),
+      year: Number(form.year),
+      images: form.images,
+      thumbnail: form.images[0] || '',
+      video: form.video,
+    }
+    // Only include breakdowns for 3D portfolio scope
+    if (scope === 'portfolio') {
+      data.breakdowns = form.breakdowns
+    }
+    return data
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     if (!form.title || !form.category) {
@@ -199,23 +271,21 @@ export default function AdminDashboard() {
     setSaving(true)
     setStatus('Saving project...')
     try {
-      const data = {
-        title: form.title,
-        category: form.category,
-        description: form.description,
-        software: form.software.split(',').map((s) => s.trim()).filter(Boolean),
-        year: Number(form.year),
-        images: form.images,
-        thumbnail: form.images[0] || '',
-        video: form.video,
-        breakdowns: form.breakdowns,
-      }
+      const data = buildPayload()
 
       if (view === 'edit' && editingProject) {
-        await updateProject(editingProject.id, data)
+        if (scope === 'portfolio') {
+          await updateProject(editingProject.id, data)
+        } else {
+          await updateAIProject(editingProject.id, data)
+        }
         setStatus('✓ Project updated!')
       } else {
-        await addProject(data)
+        if (scope === 'portfolio') {
+          await addProject(data)
+        } else {
+          await addAIProject(data)
+        }
         setStatus('✓ Project published!')
       }
       setTimeout(() => {
@@ -234,11 +304,16 @@ export default function AdminDashboard() {
     setSaving(true)
     setStatus('Saving gallery...')
     try {
-      await updateProject(galleryProject.id, {
+      const data = {
         images: form.images,
         thumbnail: form.images.length > 0 ? form.images[0] : (galleryProject.thumbnail || ''),
         video: form.video,
-      })
+      }
+      if (scope === 'portfolio') {
+        await updateProject(galleryProject.id, data)
+      } else {
+        await updateAIProject(galleryProject.id, data)
+      }
       setStatus('✓ Gallery updated!')
       setTimeout(() => {
         setView('list')
@@ -254,10 +329,17 @@ export default function AdminDashboard() {
   const handleDelete = async (id) => {
     try {
       // First fetch the project to get all media URLs
-      const targetProject = await getProject(id)
+      const targetProject =
+        scope === 'portfolio'
+          ? await getProject(id)
+          : await getAIProject(id)
 
       // Delete the database row
-      await deleteProject(id)
+      if (scope === 'portfolio') {
+        await deleteProject(id)
+      } else {
+        await deleteAIProject(id)
+      }
       setConfirmDelete(null)
 
       // Background cleanup: delete actual files from storage
@@ -284,18 +366,39 @@ export default function AdminDashboard() {
           <span className="display">SS</span>
           <span className="mono">Admin</span>
         </div>
+
+        {/* Scope toggle — 3D Projects vs AI Studio */}
+        <div className="admin-scope-toggle" role="tablist" aria-label="Project scope">
+          <button
+            role="tab"
+            aria-selected={scope === 'portfolio'}
+            className={`admin-scope-btn ${scope === 'portfolio' ? 'active' : ''}`}
+            onClick={() => switchScope('portfolio')}
+          >
+            ◈ <span>3D Projects</span>
+          </button>
+          <button
+            role="tab"
+            aria-selected={scope === 'ai'}
+            className={`admin-scope-btn ${scope === 'ai' ? 'active' : ''}`}
+            onClick={() => switchScope('ai')}
+          >
+            ◇ <span>AI Studio</span>
+          </button>
+        </div>
+
         <nav className="admin-sidebar__nav">
           <button
             className={`admin-nav-btn ${view === 'list' ? 'active' : ''}`}
             onClick={() => setView('list')}
           >
-            ◈ Projects
+            {config.icon} {config.label}
           </button>
           <button
             className={`admin-nav-btn ${view === 'upload' ? 'active' : ''}`}
             onClick={openUpload}
           >
-            + New Project
+            + New {scope === 'ai' ? 'AI' : '3D'} Project
           </button>
           <button
             className={`admin-nav-btn ${view === 'resume' ? 'active' : ''}`}
@@ -316,7 +419,10 @@ export default function AdminDashboard() {
         {view === 'list' && (
           <div className="admin-panel">
             <div className="admin-panel__header">
-              <h1 className="display admin-panel__title">Projects</h1>
+              <h1 className="display admin-panel__title">
+                {config.label}
+                <span className="mono admin-panel__scope">· {scope === 'ai' ? 'image / video' : '3D / VFX'}</span>
+              </h1>
               <button className="btn btn-primary" onClick={openUpload}>
                 + New Project
               </button>
@@ -325,7 +431,9 @@ export default function AdminDashboard() {
             {loading ? (
               <p className="mono admin-empty">Loading...</p>
             ) : projects.length === 0 ? (
-              <p className="mono admin-empty">No projects yet. Add your first one.</p>
+              <p className="mono admin-empty">
+                No {scope === 'ai' ? 'AI studio' : ''} projects yet. Add your first one.
+              </p>
             ) : (
               <div className="admin-project-list">
                 {projects.map((project) => (
@@ -341,7 +449,9 @@ export default function AdminDashboard() {
                         {project.title}
                       </h3>
                       <span className="mono admin-project-row__meta">
-                        {project.category} · {project.year}
+                        {scope === 'ai'
+                          ? (SCOPE_CONFIG.ai.categoryLabels[project.category] || project.category)
+                          : project.category}{' · '}{project.year}
                       </span>
                     </div>
                     <div className="admin-project-row__actions">
@@ -370,7 +480,7 @@ export default function AdminDashboard() {
           <div className="admin-panel">
             <div className="admin-panel__header">
               <h1 className="display admin-panel__title">
-                {view === 'edit' ? 'Edit Project' : 'New Project'}
+                {view === 'edit' ? 'Edit' : 'New'} {config.label.slice(0, -1)}
               </h1>
               <button className="btn btn-ghost" onClick={() => setView('list')}>
                 ← Back
@@ -380,11 +490,44 @@ export default function AdminDashboard() {
             <form onSubmit={handleSubmit} className="admin-form">
               <div className="admin-form__row">
                 <AdminField label="Title *" name="title" value={form.title} onChange={handleChange} />
-                <AdminField label="Category *" name="category" value={form.category} onChange={handleChange} placeholder="e.g. Product Visualization" />
+
+                {scope === 'portfolio' ? (
+                  <AdminField
+                    label="Category *"
+                    name="category"
+                    value={form.category}
+                    onChange={handleChange}
+                    placeholder="e.g. Product Visualization"
+                  />
+                ) : (
+                  <label className="admin-field">
+                    <span className="mono admin-field__label">Category *</span>
+                    <select
+                      name="category"
+                      value={form.category}
+                      onChange={handleChange}
+                      className="admin-input admin-select"
+                    >
+                      <option value="">Select type…</option>
+                      {SCOPE_CONFIG.ai.categoryOptions.map((opt) => (
+                        <option key={opt} value={opt}>
+                          {SCOPE_CONFIG.ai.categoryLabels[opt]}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                )}
               </div>
+
               <div className="admin-form__row">
                 <AdminField label="Year" name="year" type="number" value={form.year} onChange={handleChange} />
-                <AdminField label="Software (comma-separated)" name="software" value={form.software} onChange={handleChange} placeholder="Blender, After Effects" />
+                <AdminField
+                  label="Software (comma-separated)"
+                  name="software"
+                  value={form.software}
+                  onChange={handleChange}
+                  placeholder={scope === 'ai' ? 'VEO, Flow, Higgsfield' : 'Blender, After Effects'}
+                />
               </div>
 
               <label className="admin-field">
@@ -399,47 +542,49 @@ export default function AdminDashboard() {
                 />
               </label>
 
-              {/* Breakdowns Area */}
-              <div className="admin-field" style={{ marginTop: '1rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                  <span className="mono admin-field__label" style={{ marginBottom: 0 }}>Project Breakdown Steps</span>
-                  <button type="button" className="btn btn-ghost" style={{ padding: '4px 12px', fontSize: '0.7rem' }} onClick={handleAddBreakdown}>+ Add Step</button>
-                </div>
+              {/* Breakdowns — only for 3D portfolio */}
+              {config.hasBreakdowns && (
+                <div className="admin-field" style={{ marginTop: '1rem' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                    <span className="mono admin-field__label" style={{ marginBottom: 0 }}>Project Breakdown Steps</span>
+                    <button type="button" className="btn btn-ghost" style={{ padding: '4px 12px', fontSize: '0.7rem' }} onClick={handleAddBreakdown}>+ Add Step</button>
+                  </div>
 
-                <div className="admin-breakdowns-list">
-                  {form.breakdowns.map((item, i) => (
-                    <div key={i} className="admin-breakdown-row">
-                      <div className="admin-breakdown-row__inputs">
-                        <input
-                          type="text"
-                          className="admin-input"
-                          placeholder="Step Name (e.g. Modeling)"
-                          value={item.label}
-                          onChange={(e) => handleBreakdownChange(i, 'label', e.target.value)}
-                        />
-                        <textarea
-                          className="admin-input admin-textarea"
-                          rows={2}
-                          placeholder="Short description of this step..."
-                          value={item.desc}
-                          onChange={(e) => handleBreakdownChange(i, 'desc', e.target.value)}
-                        />
+                  <div className="admin-breakdowns-list">
+                    {form.breakdowns.map((item, i) => (
+                      <div key={i} className="admin-breakdown-row">
+                        <div className="admin-breakdown-row__inputs">
+                          <input
+                            type="text"
+                            className="admin-input"
+                            placeholder="Step Name (e.g. Modeling)"
+                            value={item.label}
+                            onChange={(e) => handleBreakdownChange(i, 'label', e.target.value)}
+                          />
+                          <textarea
+                            className="admin-input admin-textarea"
+                            rows={2}
+                            placeholder="Short description of this step..."
+                            value={item.desc}
+                            onChange={(e) => handleBreakdownChange(i, 'desc', e.target.value)}
+                          />
+                        </div>
+                        <button
+                          type="button"
+                          className="admin-breakdown-row__remove admin-action-btn admin-action-btn--danger"
+                          onClick={() => handleRemoveBreakdown(i)}
+                          title="Remove Step"
+                        >
+                          ✕
+                        </button>
                       </div>
-                      <button
-                        type="button"
-                        className="admin-breakdown-row__remove admin-action-btn admin-action-btn--danger"
-                        onClick={() => handleRemoveBreakdown(i)}
-                        title="Remove Step"
-                      >
-                        ✕
-                      </button>
-                    </div>
-                  ))}
-                  {form.breakdowns.length === 0 && (
-                    <span className="mono" style={{ color: 'var(--c-grey-5)', fontSize: '0.8rem' }}>No breakdown steps added.</span>
-                  )}
+                    ))}
+                    {form.breakdowns.length === 0 && (
+                      <span className="mono" style={{ color: 'var(--c-grey-5)', fontSize: '0.8rem' }}>No breakdown steps added.</span>
+                    )}
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* Media Upload Area */}
               <div className="admin-field" style={{ marginTop: '1rem' }}>
@@ -539,7 +684,7 @@ export default function AdminDashboard() {
             <form onSubmit={handleGallerySubmit} className="admin-form">
               <div className="admin-field">
                 <span className="mono admin-field__label">Project Media (Images / Video)</span>
-                
+
                 <div
                   className="admin-dropzone"
                   onClick={() => !saving && fileInputRef.current?.click()}
@@ -675,7 +820,7 @@ export default function AdminDashboard() {
               transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
             >
               <h3 className="display admin-confirm-modal__title">Delete?</h3>
-              <p className="admin-confirm-modal__sub">This will delete the project and all attached files.</p>
+              <p className="admin-confirm-modal__sub">This will delete the {scope === 'ai' ? 'AI studio' : ''} project and all attached files.</p>
               <div className="admin-confirm-modal__actions">
                 <button className="btn btn-ghost" onClick={() => setConfirmDelete(null)}>
                   Cancel

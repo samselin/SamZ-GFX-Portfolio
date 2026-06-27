@@ -11,6 +11,7 @@ import AdminGuard from './admin/AdminGuard'
 // Lazy-load pages for performance
 const Home           = lazy(() => import('./pages/Home'))
 const Portfolio      = lazy(() => import('./pages/Portfolio'))
+const AIStudio       = lazy(() => import('./pages/AIStudio'))
 const ProjectDetail  = lazy(() => import('./pages/ProjectDetail'))
 const About          = lazy(() => import('./pages/About'))
 const Contact        = lazy(() => import('./pages/Contact'))
@@ -68,6 +69,7 @@ export default function App() {
           <Routes location={location} key={location.pathname}>
             <Route path="/"              element={<Home />} />
             <Route path="/portfolio"     element={<Portfolio />} />
+            <Route path="/ai-studio"     element={<AIStudio />} />
             <Route path="/project/:id"   element={<ProjectDetail />} />
             <Route path="/about"         element={<About />} />
             <Route path="/contact"       element={<Contact />} />

@@ -7,7 +7,7 @@ import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import PageTransition from '../components/PageTransition'
 import LiquidImage from '../components/LiquidImage'
-import { useProject, useProjects } from '../hooks/useProjects'
+import { useProject, useProjects, useAIProjects } from '../hooks/useProjects'
 import { fadeUp, stagger } from '../animations/variants'
 import './ProjectDetail.css'
 
@@ -24,10 +24,20 @@ export default function ProjectDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
   const { project, loading } = useProject(id)
-  const { projects } = useProjects()
+  const { projects: portfolioProjects } = useProjects()
+  const { projects: aiProjectsList } = useAIProjects()
   const galleryRef = useRef(null)
   const heroRef = useRef(null)
   const [lightboxIndex, setLightboxIndex] = useState(null)
+
+  // Determine which scope this project belongs to.
+  // 3D portfolio categories are free-text titles ("Product Visualization" etc.);
+  // AI Studio categories are strictly "image" or "video".
+  const isAIProject = project
+    ? project.category === 'image' || project.category === 'video'
+    : false
+  const projects = isAIProject ? aiProjectsList : portfolioProjects
+  const backHref = isAIProject ? '/ai-studio' : '/portfolio'
 
   const openLightbox = (index) => setLightboxIndex(index)
   const closeLightbox = useCallback(() => setLightboxIndex(null), [])
@@ -158,11 +168,13 @@ export default function ProjectDetail() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.9, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
             >
-              <Link to="/portfolio" className="project-hero__back mono">
-                ← Portfolio
+              <Link to={backHref} className="project-hero__back mono">
+                ← {isAIProject ? 'AI Studio' : 'Portfolio'}
               </Link>
               <span className="section-label" style={{ marginTop: '1.5rem' }}>
-                {project.category}
+                {isAIProject
+                  ? (project.category === 'video' ? 'AI Video' : 'AI Image')
+                  : project.category}
               </span>
               <h1 className="project-hero__title display">{project.title}</h1>
             </motion.div>
@@ -191,7 +203,12 @@ export default function ProjectDetail() {
               viewport={{ once: true }}
               transition={{ duration: 0.8, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
             >
-              <DetailRow label="Category" value={project.category} />
+              <DetailRow
+                label="Category"
+                value={isAIProject
+                  ? (project.category === 'video' ? 'AI Video' : 'AI Image')
+                  : project.category}
+              />
               <DetailRow label="Year" value={project.year} />
               <DetailRow label="Software" value={project.software?.join(', ')} />
             </motion.div>

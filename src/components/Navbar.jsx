@@ -8,6 +8,7 @@ import './Navbar.css'
 const NAV_LINKS = [
   { to: '/', label: 'Home' },
   { to: '/portfolio', label: 'Portfolio' },
+  { to: '/ai-studio', label: 'AI Studio' },
   { to: '/about', label: 'About' },
   { to: '/contact', label: 'Contact' },
 ]
