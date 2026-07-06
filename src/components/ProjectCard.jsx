@@ -8,6 +8,7 @@ export default function ProjectCard({ project, index = 0 }) {
   const cardRef = useRef(null)
 
   const handleMouseMove = (e) => {
+    if (window.matchMedia('(hover: none)').matches) return
     const card = cardRef.current
     if (!card) return
     const rect = card.getBoundingClientRect()

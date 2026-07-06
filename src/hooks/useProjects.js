@@ -45,6 +45,7 @@ export function useProject(id) {
   useEffect(() => {
     if (local || !id) {
       setRemoteProject(null)
+      setRemoteLoading(false)
       return
     }
     let cancelled = false

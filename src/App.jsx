@@ -67,7 +67,7 @@ export default function App() {
       {!isAdmin && <ScrollToTop />}
 
       {/* Page transitions with AnimatePresence */}
-      <AnimatePresence mode="wait" initial={false}>
+      <AnimatePresence mode="wait" initial={false} onExitComplete={() => window.scrollTo(0, 0)}>
         <Suspense fallback={<PageLoader />}>
           <Routes location={location} key={location.pathname}>
             <Route path="/"              element={<Home />} />

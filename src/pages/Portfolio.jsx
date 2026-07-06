@@ -80,6 +80,7 @@ function HorizontalCard({ project, index }) {
   const cardRef = useRef(null)
 
   const handleMouseMove = (e) => {
+    if (window.matchMedia('(hover: none)').matches) return
     const card = cardRef.current
     if (!card) return
     const rect = card.getBoundingClientRect()

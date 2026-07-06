@@ -182,7 +182,16 @@ export default function ProjectDetail() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.9, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
             >
-              <Link to={backHref} className="project-hero__back mono">
+              <Link 
+                to={backHref} 
+                className="project-hero__back mono"
+                onClick={(e) => {
+                  if (window.history.state && window.history.state.idx > 0) {
+                    e.preventDefault();
+                    navigate(-1);
+                  }
+                }}
+              >
                 ← {isAIProject ? 'AI Studio' : 'Portfolio'}
               </Link>
               {project.views > 0 && (
